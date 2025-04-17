@@ -4,6 +4,7 @@ void main() {
   runApp(MyApp()); // Llama a la función runApp para iniciar la aplicación Flutter.
 }
 
+
 class MyApp extends StatelessWidget { // Define una clase llamada MyApp que extiende StatelessWidget.
   @override
   Widget build(BuildContext context) { // Define el método build para construir la interfaz de la aplicación.
@@ -21,7 +22,6 @@ class MyApp extends StatelessWidget { // Define una clase llamada MyApp que exti
     );
   }
 }
-
 class AuthScreen extends StatefulWidget { // Define una clase llamada AuthScreen que extiende StatefulWidget.
   @override
   _AuthScreenState createState() => _AuthScreenState(); // Crea el estado para AuthScreen.
