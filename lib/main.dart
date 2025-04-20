@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Importa la librería Flutter
 import 'package:circular_menu/circular_menu.dart'; //libreria para el menu circular
-//import 'package:firebase_core/firebase_core.dart'; // Importa la librería de Firebase
+import 'package:firebase_core/firebase_core.dart'; // Importa la librería de Firebase
 import 'routes/app_routes.dart'; // Importa las rutas de la aplicación
 
-void main() {
-  runApp(
-    MyApp(),
-  ); // Llama a la función runApp para iniciar la aplicación Flutter.
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
