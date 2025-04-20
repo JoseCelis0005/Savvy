@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatelessWidget {
@@ -55,38 +54,26 @@ class RegisterScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async  {
-                final registerEmail = registerEmailController.text.trim(); // Obtiene el correo electrónico ingresado.
-                final registerPassword = registerPasswordController.text.trim(); // Obtiene la contraseña ingresada.
+                final email = registerEmailController.text.trim(); // Obtiene el correo electrónico ingresado.
+                final password  = registerPasswordController.text.trim(); // Obtiene la contraseña ingresada.
                 
-                /*try {
+                await FirebaseFirestore.instance.collection('users').add({
+                  'email': email,
+                  'password': password, // ¡Recuerda! Nunca guardes contraseñas así en producción
+                  'created_at': Timestamp.now(),
+                });
 
-                  // 1. Crear usuario en Firebase Authentication
-                  UserCredential userCredential = await FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
-                    email: email,
-                    password: password,
-                  );
-
-                  // 2. Guardar datos del usuario en Firestore
-                  await FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userCredential.user!.uid)
-                      .set({
-                    'uid': userCredential.user!.uid,
-                    'email': email,
-                    'createdAt': FieldValue.serverTimestamp(),
-                  });
-                }*/
+                Navigator.pop(context);
                 
-                final result = {
-                  'email': registerEmail,
-                  'password': registerPassword,
+                /*final result = {
+                  'email': email,
+                  'password': password ,
                 }; // Crea un mapa con los datos de registro.*/
 
-                Navigator.pop(
+                /*Navigator.pop(
                   context,
                   result,
-                );
+                );*/
                  // Cierra la pantalla de registro y devuelve los datos al estado anterior.
               },
               style: ElevatedButton.styleFrom(
