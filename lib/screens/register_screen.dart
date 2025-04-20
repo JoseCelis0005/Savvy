@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatelessWidget {
   //const RegisterScreen({super.key});
@@ -7,10 +9,8 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Método para construir la interfaz de RegisterScreen.
-    TextEditingController registerEmailController =
-        TextEditingController(); // Controlador para el correo electrónico de registro.
-    TextEditingController registerPasswordController =
-        TextEditingController(); // Controlador para la contraseña de registro.
+    TextEditingController registerEmailController = TextEditingController(); // Controlador para el correo electrónico de registro.
+    TextEditingController registerPasswordController = TextEditingController(); // Controlador para la contraseña de registro.
 
     return Scaffold(
       appBar: AppBar(
@@ -54,21 +54,40 @@ class RegisterScreen extends StatelessWidget {
 
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                final registerEmail =
-                    registerEmailController
-                        .text; // Obtiene el correo electrónico ingresado.
-                final registerPassword =
-                    registerPasswordController
-                        .text; // Obtiene la contraseña ingresada.
+              onPressed: () async  {
+                final registerEmail = registerEmailController.text.trim(); // Obtiene el correo electrónico ingresado.
+                final registerPassword = registerPasswordController.text.trim(); // Obtiene la contraseña ingresada.
+                
+                /*try {
+
+                  // 1. Crear usuario en Firebase Authentication
+                  UserCredential userCredential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
+
+                  // 2. Guardar datos del usuario en Firestore
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userCredential.user!.uid)
+                      .set({
+                    'uid': userCredential.user!.uid,
+                    'email': email,
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                }*/
+                
                 final result = {
                   'email': registerEmail,
                   'password': registerPassword,
-                }; // Crea un mapa con los datos de registro.
+                }; // Crea un mapa con los datos de registro.*/
+
                 Navigator.pop(
                   context,
                   result,
-                ); // Cierra la pantalla de registro y devuelve los datos al estado anterior.
+                );
+                 // Cierra la pantalla de registro y devuelve los datos al estado anterior.
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromRGBO(
