@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Importa la librería Flutter
 import 'package:circular_menu/circular_menu.dart'; //libreria para el menu circular
+import 'package:firebase_core/firebase_core.dart'; // Importa la librería de Firebase
 
-void main() {
-  runApp(
-    MyApp(),
-  ); // Llama a la función runApp para iniciar la aplicación Flutter.
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Asegura que los servicios de Flutter estén listos
+  await Firebase.initializeApp(); // Inicializa Firebase
+  runApp(MyApp()); // Inicia la app
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   // Define una clase llamada MyApp que extiende StatelessWidget.
   @override
   Widget build(BuildContext context) {
@@ -43,6 +46,8 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
+
   // Define una clase llamada AuthScreen que extiende StatefulWidget.
   @override
   _AuthScreenState createState() => _AuthScreenState(); // Crea el estado para AuthScreen.
@@ -247,6 +252,8 @@ class _AuthScreenState extends State<AuthScreen> {
 }
 
 class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
+
   // Define una clase llamada RegisterScreen que extiende StatelessWidget.
   @override
   Widget build(BuildContext context) {
@@ -340,6 +347,8 @@ class RegisterScreen extends StatelessWidget {
 }
 
 class HelloWorldScreen extends StatefulWidget {
+  const HelloWorldScreen({super.key});
+
   @override
   _HelloWorldScreenState createState() => _HelloWorldScreenState();
 }
@@ -354,6 +363,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
     });
   }
 
+  @override
   Widget build(BuildContext context) {
     // Método para construir la interfaz de HelloWorldScreen.
     return Scaffold(
@@ -380,7 +390,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Container(
+            SizedBox(
               width: 300,
               child: Recuadro(
                 titulo: 'Ahorros Mensuales',
@@ -389,7 +399,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
               ),
             ),
             SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: 300,
               child: Recuadro(
                 titulo: 'Ahorro Objetivo',
@@ -398,7 +408,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
               ),
             ),
             SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: 300,
               child: Recuadro(
                 titulo: 'Gastos',
@@ -457,6 +467,8 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
+  const LogrosScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -576,12 +588,12 @@ class LogroItem extends StatelessWidget {
   final bool isNew;
 
   const LogroItem({
-    Key? key,
+    super.key,
     required this.imagen,
     required this.titulo,
     required this.monto,
     this.isNew = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -637,6 +649,8 @@ class LogroItem extends StatelessWidget {
 
 //pantalla informes
 class InformesScreen extends StatelessWidget {
+  const InformesScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -652,6 +666,8 @@ class InformesScreen extends StatelessWidget {
 
 //pantalla configuración
 class ConfiguracionScreen extends StatelessWidget {
+  const ConfiguracionScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -675,11 +691,11 @@ class Recuadro extends StatelessWidget {
   final String porcentaje;
 
   const Recuadro({
-    Key? key,
+    super.key,
     required this.titulo,
     required this.monto,
     required this.porcentaje,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
