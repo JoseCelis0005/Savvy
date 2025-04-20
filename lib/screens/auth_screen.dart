@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:circular_menu/circular_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthScreen extends StatefulWidget {
   //const AuthScreen({super.key});
@@ -12,14 +13,10 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   // Define el estado de AuthScreen.
-  TextEditingController emailController =
-      TextEditingController(); // Controlador para el campo de correo electrónico.
-  TextEditingController passwordController =
-      TextEditingController(); // Controlador para el campo de contraseña.
-  bool isRegistered =
-      false; // Variable booleana que indica si el usuario está registrado.
-  bool isLoggedIn =
-      false; // Variable booleana que indica si el usuario ha iniciado sesión.
+  TextEditingController emailController = TextEditingController(); // Controlador para el campo de correo electrónico.
+  TextEditingController passwordController = TextEditingController(); // Controlador para el campo de contraseña.
+  bool isRegistered = false; // Variable booleana que indica si el usuario está registrado.
+  bool isLoggedIn = false; // Variable booleana que indica si el usuario ha iniciado sesión.
   String? registeredEmail; // Almacena el correo electrónico registrado.
   String? registeredPassword; // Almacena la contraseña registrada.
 
@@ -34,41 +31,39 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         // Actualiza el estado de la aplicación.
         isRegistered = true;
-        registeredEmail =
-            result['email']; // Almacena el correo electrónico registrado.
-        registeredPassword =
-            result['password']; // Almacena la contraseña registrada.
+        registeredEmail = result['email']; // Almacena el correo electrónico registrado.
+        registeredPassword =  result['password']; // Almacena la contraseña registrada.
         //registeredEmail = "savvy@gmail.com";
         //registeredPassword = "12345";
       });
     }
   }
 
-  void login() {
-    // Función para iniciar sesión.
-    if (isRegistered) {
-      // Comprueba si el usuario está registrado.
-      final enteredEmail =
-          emailController.text; // Obtiene el correo electrónico ingresado.
-      final enteredPassword =
-          passwordController.text; // Obtiene la contraseña ingresada.
-      if (enteredEmail == registeredEmail &&
-          enteredPassword == registeredPassword) {
-        // Comprueba las credenciales.
+  void login() async {
+    final enteredEmail = emailController.text.trim();
+    final enteredPassword = passwordController.text;
+
+    try {
+      // Cambiado a 'users', que es el nombre de tu colección
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: enteredEmail)
+          .where('password', isEqualTo: enteredPassword)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Usuario encontrado
         setState(() {
-          // Actualiza el estado de la aplicación.
-          isLoggedIn = true; // Marca al usuario como autenticado.
+          isLoggedIn = true;
         });
       } else {
-        // Credenciales incorrectas, muestra un diálogo de error.
+        // Usuario no encontrado o credenciales incorrectas
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('Error de inicio de sesión'),
-              content: Text(
-                'Credenciales incorrectas. Verifica tu correo y contraseña.',
-              ),
+              content: Text('Credenciales incorrectas. Verifica tu correo y contraseña.'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
@@ -81,14 +76,14 @@ class _AuthScreenState extends State<AuthScreen> {
           },
         );
       }
-    } else {
-      // El usuario no está registrado, muestra un diálogo de error.
+    } catch (e) {
+      print('Error al intentar iniciar sesión: $e');
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Error de inicio de sesión'),
-            content: Text('Debes registrarte antes de iniciar sesión.'),
+            title: Text('Error'),
+            content: Text('Hubo un error al conectar con la base de datos.'),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
