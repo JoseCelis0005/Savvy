@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Importa la librería Flutter
 import 'package:circular_menu/circular_menu.dart'; //libreria para el menu circular
-import 'package:firebase_core/firebase_core.dart'; // Importa la librería de Firebase
+//import 'package:firebase_core/firebase_core.dart'; // Importa la librería de Firebase
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Asegura que los servicios de Flutter estén listos
-  await Firebase.initializeApp(); // Inicializa Firebase
-  runApp(MyApp()); // Inicia la app
+void main() {
+  runApp(
+    MyApp(),
+  ); // Llama a la función runApp para iniciar la aplicación Flutter.
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  //const MyApp({super.key});
 
   // Define una clase llamada MyApp que extiende StatelessWidget.
   @override
@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  //const AuthScreen({super.key});
 
   // Define una clase llamada AuthScreen que extiende StatefulWidget.
   @override
@@ -252,7 +252,7 @@ class _AuthScreenState extends State<AuthScreen> {
 }
 
 class RegisterScreen extends StatelessWidget {
-  const RegisterScreen({super.key});
+  //const RegisterScreen({super.key});
 
   // Define una clase llamada RegisterScreen que extiende StatelessWidget.
   @override
@@ -347,7 +347,7 @@ class RegisterScreen extends StatelessWidget {
 }
 
 class HelloWorldScreen extends StatefulWidget {
-  const HelloWorldScreen({super.key});
+  //const HelloWorldScreen({super.key});
 
   @override
   _HelloWorldScreenState createState() => _HelloWorldScreenState();
@@ -467,7 +467,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
-  const LogrosScreen({super.key});
+  //const LogrosScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -649,7 +649,7 @@ class LogroItem extends StatelessWidget {
 
 //pantalla informes
 class InformesScreen extends StatelessWidget {
-  const InformesScreen({super.key});
+  //const InformesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -666,7 +666,7 @@ class InformesScreen extends StatelessWidget {
 
 //pantalla configuración
 class ConfiguracionScreen extends StatelessWidget {
-  const ConfiguracionScreen({super.key});
+  //const ConfiguracionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -691,7 +691,7 @@ class Recuadro extends StatelessWidget {
   final String porcentaje;
 
   const Recuadro({
-    super.key,
+    //super.key,
     required this.titulo,
     required this.monto,
     required this.porcentaje,
