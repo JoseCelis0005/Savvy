@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
 
-class ConfiguracionScreen extends StatelessWidget {
+class ConfiguracionScreen extends StatefulWidget {
+  @override
+  _ConfiguracionScreen createState() => _ConfiguracionScreen();
+}
+
+class _ConfiguracionScreen extends State<ConfiguracionScreen> {
   //const ConfiguracionScreen({super.key});
 
   @override
@@ -28,9 +33,39 @@ class ConfiguracionScreen extends StatelessWidget {
       body: // Aquí va el código para mostrar la pantalla de logros
       //  ... (Código de la pantalla de logros de la imagen)
       Center(
-        child: Text(
-          "Pantalla de CONFIGURACIÓN",
-          style: TextStyle(fontSize: 24),
+        child: ListView(
+          padding: EdgeInsets.all(16.0),
+          children: [
+            ListTile(
+              leading: Icon(Icons.person, color: Colors.teal),
+              title: Text('Configuración de Usuario'),
+              onTap: () {},
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.color_lens, color: Colors.teal),
+              title: Text('Configuración de Tema'),
+              onTap: () {},
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.language, color: Colors.teal),
+              title: Text('Configuración de Idioma'),
+              onTap: () {},
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.attach_money, color: Colors.teal),
+              title: Text('Configuración de Moneda'),
+              onTap: () {},
+            ),
+            Divider(),
+            ListTile(
+              leading: Icon(Icons.logout, color: Colors.teal),
+              title: Text('Cerrar Sesión'),
+              onTap: () {},
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomAppBar(
