@@ -218,6 +218,13 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
     setState(() {
       _selectedIndex = index;
     });
+
+    if (index == 2) {
+      // Redirige a la ruta raíz '/' y elimina todas las rutas anteriores
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+    }
+
+    // Puedes manejar otros índices si es necesario
   }
 
   @override

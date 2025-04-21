@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:circular_menu/circular_menu.dart';
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
@@ -7,10 +8,28 @@ class LogrosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         title: Text('TUS LOGROS'),
         automaticallyImplyLeading:
             false, // Opcional: Quita la flecha de "volver" automática
+      ),*/
+      appBar: AppBar(
+        backgroundColor: Color.fromRGBO(6, 145, 154, 1),
+        centerTitle: true,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Tus Logros',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 5),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -92,11 +111,7 @@ class LogrosScreen extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () {
-                // Navegar a la pantalla de inicio (ajusta la ruta según tu app)
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/',
-                ); // Ejemplo: '/' es la ruta de inicio
+                Navigator.pop(context); // Navegar hacia atrás
               },
             ),
             IconButton(
@@ -111,6 +126,36 @@ class LogrosScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+
+      //Circular menú
+      floatingActionButton: CircularMenu(
+        alignment: Alignment.bottomRight,
+        toggleButtonColor: Colors.teal,
+        toggleButtonIconColor: Colors.white,
+        items: [
+          CircularMenuItem(
+            icon: Icons.settings,
+            color: Colors.teal,
+            onTap: () {
+              Navigator.pushNamed(context, '/configuracion');
+            },
+          ),
+          CircularMenuItem(
+            icon: Icons.bar_chart,
+            color: Colors.teal,
+            onTap: () {
+              Navigator.pushNamed(context, '/informes');
+            },
+          ),
+          CircularMenuItem(
+            icon: Icons.emoji_events,
+            color: Colors.teal,
+            onTap: () {
+              Navigator.pushNamed(context, '/logros');
+            },
+          ),
+        ],
       ),
     );
   }
