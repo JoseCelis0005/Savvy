@@ -231,7 +231,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Index',
+              'Inicio',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -280,12 +280,9 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.arrow_back), label: 'Atras'),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
-          BottomNavigationBarItem(
-            icon: SizedBox(width: 24, height: 24),
-            label: '',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Salir'),
         ],
       ),
 
@@ -324,8 +321,6 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
 
 //pantalla configuración
 //clase recuadro pantalla principal
-
-
 class Recuadro extends StatelessWidget {
   final String titulo;
   final String monto;
