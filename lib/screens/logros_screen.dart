@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
@@ -67,7 +69,32 @@ class LogrosScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  LogroItem(
+                  StreamBuilder(
+                    stream: FirebaseFirestore.instance.collection('achievements').snapshots(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(child: Text('No achievements found.'));
+                      }
+                      return Column(
+                        children: snapshot.data!.docs.map((doc) {
+                          return Column(
+                            children: [
+                                  LogroItem(
+                                  imagen: 'assets/images/logro.png',
+                                  titulo: _capitalizeFirstLetter(doc['name_logro'] ?? 'Sin Titulo'),
+                                  monto: _formatCurrency(doc['monto'] ?? '0'),
+                                  ),
+                              SizedBox(height: 12.0),
+                            ],
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                  /*LogroItem(
                     imagen:
                         'assets/images/vacaciones.jpg', // Reemplaza con tus rutas de imágenes
                     titulo: 'VACACIONES',
@@ -84,11 +111,11 @@ class LogrosScreen extends StatelessWidget {
                     imagen: 'assets/images/casa.jpg',
                     titulo: 'NEGOCIO',
                     monto: '\$1.000.000',
-                  ),
+                  ),*/
                   SizedBox(height: 12.0),
                   LogroItem(
-                    imagen: 'assets/images/casa.jpg',
-                    titulo: 'NUEVO LOGRO',
+                    imagen: 'assets/images/logro.png',
+                    titulo: 'Nuevo Logro',
                     monto: '',
                     isNew: true,
                   ),
@@ -168,61 +195,84 @@ class LogroItem extends StatelessWidget {
   final bool isNew;
 
   const LogroItem({
-    super.key,
+    Key? key,
     required this.imagen,
     required this.titulo,
     required this.monto,
     this.isNew = false,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Image.asset(imagen, width: 80.0, height: 80.0, fit: BoxFit.cover),
-            SizedBox(width: 16.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    titulo,
-                    style: TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (!isNew) // Mostrar el monto solo si no es "NUEVO LOGRO"
+    return GestureDetector(
+      onTap: isNew
+          ? () {
+              // Navega a la pantalla deseada cuando se trata de un nuevo logro
+              Navigator.pushNamed(context, '/crear-logro');
+            }
+          : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Image.asset(imagen, width: 80.0, height: 80.0, fit: BoxFit.cover),
+              SizedBox(width: 16.0),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      monto,
+                      titulo,
                       style: TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.green, // O ajusta el color
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                ],
+                    if (!isNew)
+                      Text(
+                        monto,
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.green,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            if (isNew) // Mostrar el ícono "+" para "NUEVO LOGRO"
-              Icon(Icons.add_circle, color: Colors.teal, size: 32.0),
-          ],
+              if (isNew)
+                Icon(Icons.add_circle, color: Colors.teal, size: 32.0),
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+String _capitalizeFirstLetter(String input) {
+  if (input.isEmpty) return '';
+  return input[0].toUpperCase() + input.substring(1);
+}
+
+String _formatCurrency(String amount) {
+  try {
+    final number = double.parse(amount);
+    final formatter = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+    return formatter.format(number);
+  } catch (e) {
+    return '\$0';
   }
 }
