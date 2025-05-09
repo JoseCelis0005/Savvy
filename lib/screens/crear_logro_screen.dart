@@ -96,13 +96,15 @@ class _CrearLogroState extends State<crear_logro> {
                           final fechaFin = fechaFinController.text;
                           final monto = montoController.text;
 
-                          await FirebaseFirestore.instance.collection('achievements').add({
-                            'name_logro': nombre,
-                            'fec_inicio': fechaInicio,
-                            'fec_fin': fechaFin,
-                            'monto': monto,
-                            'created_at': Timestamp.now(),
-                          });
+                          await FirebaseFirestore.instance
+                              .collection('achievements')
+                              .add({
+                                'name_logro': nombre,
+                                'fec_inicio': fechaInicio,
+                                'fec_fin': fechaFin,
+                                'monto': monto,
+                                'created_at': Timestamp.now(),
+                              });
 
                           Navigator.pop(context);
                         },

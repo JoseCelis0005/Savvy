@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importante!
 
-//pantalla logros
 class LogrosScreen extends StatelessWidget {
-  //const LogrosScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // Obtén la instancia
+
     return Scaffold(
-      /*appBar: AppBar(
-        title: Text('TUS LOGROS'),
-        automaticallyImplyLeading:
-            false, // Opcional: Quita la flecha de "volver" automática
-      ),*/
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
         centerTitle: true,
@@ -22,7 +17,7 @@ class LogrosScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Tus Logros',
+              l10n.achievements, // Usa la clave traducida
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -53,7 +48,7 @@ class LogrosScreen extends StatelessWidget {
               ),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Buscar',
+                  hintText: l10n.search, // Usa la clave traducida
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
@@ -70,52 +65,44 @@ class LogrosScreen extends StatelessWidget {
               child: ListView(
                 children: [
                   StreamBuilder(
-                    stream: FirebaseFirestore.instance.collection('achievements').snapshots(),
+                    stream:
+                        FirebaseFirestore.instance
+                            .collection('achievements')
+                            .snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
                       }
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Center(child: Text('No achievements found.'));
+                        return Center(
+                          child: Text('No achievements found.'),
+                        ); // No necesitas traducir esto, es un mensaje de error técnico
                       }
                       return Column(
-                        children: snapshot.data!.docs.map((doc) {
-                          return Column(
-                            children: [
+                        children:
+                            snapshot.data!.docs.map((doc) {
+                              return Column(
+                                children: [
                                   LogroItem(
-                                  imagen: 'assets/images/logro.png',
-                                  titulo: _capitalizeFirstLetter(doc['name_logro'] ?? 'Sin Titulo'),
-                                  monto: _formatCurrency(doc['monto'] ?? '0'),
+                                    imagen: 'assets/images/logro.png',
+                                    titulo:
+                                        (doc['name_logro'] is Map)
+                                            ? doc['name_logro']!['es'] ??
+                                                'Sin Titulo'
+                                            : doc['name_logro'] ?? 'Sin Titulo',
+                                    monto: _formatCurrency(doc['monto'] ?? '0'),
                                   ),
-                              SizedBox(height: 12.0),
-                            ],
-                          );
-                        }).toList(),
+                                  SizedBox(height: 12.0),
+                                ],
+                              );
+                            }).toList(),
                       );
                     },
                   ),
-                  /*LogroItem(
-                    imagen:
-                        'assets/images/vacaciones.jpg', // Reemplaza con tus rutas de imágenes
-                    titulo: 'VACACIONES',
-                    monto: '\$3.200.000',
-                  ),
-                  SizedBox(height: 12.0),
-                  LogroItem(
-                    imagen: 'assets/images/casa.jpg',
-                    titulo: 'CASA',
-                    monto: '\$500.000',
-                  ),
-                  SizedBox(height: 12.0),
-                  LogroItem(
-                    imagen: 'assets/images/casa.jpg',
-                    titulo: 'NEGOCIO',
-                    monto: '\$1.000.000',
-                  ),*/
                   SizedBox(height: 12.0),
                   LogroItem(
                     imagen: 'assets/images/logro.png',
-                    titulo: 'Nuevo Logro',
+                    titulo: l10n.newAchievement, // Usa la clave traducida
                     monto: '',
                     isNew: true,
                   ),
@@ -132,23 +119,19 @@ class LogrosScreen extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.arrow_back),
               onPressed: () {
-                Navigator.pop(context); // Navegar hacia atrás
+                Navigator.pop(context);
               },
             ),
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () {
-                Navigator.pop(context); // Navegar hacia atrás
+                Navigator.pop(context);
               },
             ),
             IconButton(
               icon: Icon(Icons.attach_money),
               onPressed: () {
-                // Navegar a la pantalla de finanzas (ajusta la ruta según tu app)
-                Navigator.pushNamed(
-                  context,
-                  '/informes',
-                ); // Ejemplo: '/informes'
+                Navigator.pushNamed(context, '/informes');
               },
             ),
           ],
@@ -205,12 +188,12 @@ class LogroItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isNew
-          ? () {
-              // Navega a la pantalla deseada cuando se trata de un nuevo logro
-              Navigator.pushNamed(context, '/crear-logro');
-            }
-          : null,
+      onTap:
+          isNew
+              ? () {
+                Navigator.pushNamed(context, '/crear-logro');
+              }
+              : null,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -244,16 +227,12 @@ class LogroItem extends StatelessWidget {
                     if (!isNew)
                       Text(
                         monto,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.green,
-                        ),
+                        style: TextStyle(fontSize: 16.0, color: Colors.green),
                       ),
                   ],
                 ),
               ),
-              if (isNew)
-                Icon(Icons.add_circle, color: Colors.teal, size: 32.0),
+              if (isNew) Icon(Icons.add_circle, color: Colors.teal, size: 32.0),
             ],
           ),
         ),

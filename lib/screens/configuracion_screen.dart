@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // <-- IMPORTANTE
 
 class ConfiguracionScreen extends StatefulWidget {
   @override
@@ -7,10 +8,10 @@ class ConfiguracionScreen extends StatefulWidget {
 }
 
 class _ConfiguracionScreen extends State<ConfiguracionScreen> {
-  //const ConfiguracionScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // <-- OBTÉN LA INSTANCIA
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -19,7 +20,7 @@ class _ConfiguracionScreen extends State<ConfiguracionScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Configuracion',
+              l10n.settings, // <-- USA LA CLAVE
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -30,39 +31,41 @@ class _ConfiguracionScreen extends State<ConfiguracionScreen> {
           ],
         ),
       ),
-      body: // Aquí va el código para mostrar la pantalla de logros
-      //  ... (Código de la pantalla de logros de la imagen)
-      Center(
+      body: Center(
         child: ListView(
           padding: EdgeInsets.all(16.0),
           children: [
             ListTile(
               leading: Icon(Icons.person, color: Colors.teal),
-              title: Text('Configuración de Usuario'),
+              title: Text(l10n.userSettings), // <-- USA LA CLAVE
               onTap: () {},
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.color_lens, color: Colors.teal),
-              title: Text('Configuración de Tema'),
-              onTap: () {},
+              title: Text(l10n.themeSettings), // <-- USA LA CLAVE
+              onTap: () {
+                Navigator.pushNamed(context, '/config-tema');
+              },
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.language, color: Colors.teal),
-              title: Text('Configuración de Idioma'),
-              onTap: () {},
+              title: Text(l10n.languageSettings), // <-- USA LA CLAVE
+              onTap: () {
+                Navigator.pushNamed(context, '/config-idioma');
+              },
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.attach_money, color: Colors.teal),
-              title: Text('Configuración de Moneda'),
+              title: Text(l10n.currencySettings), // <-- USA LA CLAVE
               onTap: () {},
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.teal),
-              title: Text('Cerrar Sesión'),
+              title: Text(l10n.logout), // <-- USA LA CLAVE
               onTap: () {},
             ),
           ],

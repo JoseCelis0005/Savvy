@@ -5,6 +5,8 @@ import '../screens/logros_screen.dart';
 import '../screens/informes_screen.dart';
 import '../screens/configuracion_screen.dart';
 import '../screens/crear_logro_screen.dart';
+import '../screens/configuracion/config_tema_screen.dart';
+import '../screens/configuracion/config_idioma_screen.dart';
 
 class AppRoutes {
   static const initialRoute = '/';
@@ -16,5 +18,7 @@ class AppRoutes {
     '/informes': (context) => InformesScreen(),
     '/configuracion': (context) => ConfiguracionScreen(),
     '/crear-logro': (context) => crear_logro(),
+    '/config-tema': (_) => ConfigTemaScreen(),
+    '/config-idioma': (_) => ConfigIdiomaScreen(),
   };
 }

@@ -2,39 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:circular_menu/circular_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // <-- IMPORTANTE
 
 class AuthScreen extends StatefulWidget {
-  //const AuthScreen({super.key});
-
-  // Define una clase llamada AuthScreen que extiende StatefulWidget.
   @override
-  _AuthScreenState createState() => _AuthScreenState(); // Crea el estado para AuthScreen.
+  _AuthScreenState createState() => _AuthScreenState();
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  // Define el estado de AuthScreen.
-  TextEditingController emailController = TextEditingController(); // Controlador para el campo de correo electrónico.
-  TextEditingController passwordController = TextEditingController(); // Controlador para el campo de contraseña.
-  bool isRegistered = false; // Variable booleana que indica si el usuario está registrado.
-  bool isLoggedIn = false; // Variable booleana que indica si el usuario ha iniciado sesión.
-  String? registeredEmail; // Almacena el correo electrónico registrado.
-  String? registeredPassword; // Almacena la contraseña registrada.
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  bool isRegistered = false;
+  bool isLoggedIn = false;
+  String? registeredEmail;
+  String? registeredPassword;
 
   void register() async {
-    // Función para registrar un usuario.
     final result = await Navigator.pushNamed(
       context,
       '/register',
-    ); // Abre la pantalla de registro y espera un resultado.
+    );
     if (result != null && result is Map<String, String>) {
-      // Comprueba si se recibió un resultado válido.
       setState(() {
-        // Actualiza el estado de la aplicación.
         isRegistered = true;
-        registeredEmail = result['email']; // Almacena el correo electrónico registrado.
-        registeredPassword =  result['password']; // Almacena la contraseña registrada.
-        //registeredEmail = "savvy@gmail.com";
-        //registeredPassword = "12345";
+        registeredEmail = result['email'];
+        registeredPassword = result['password'];
       });
     }
   }
@@ -44,7 +36,6 @@ class _AuthScreenState extends State<AuthScreen> {
     final enteredPassword = passwordController.text;
 
     try {
-      // Cambiado a 'users', que es el nombre de tu colección
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('email', isEqualTo: enteredEmail)
@@ -52,24 +43,23 @@ class _AuthScreenState extends State<AuthScreen> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        // Usuario encontrado
         setState(() {
           isLoggedIn = true;
         });
       } else {
-        // Usuario no encontrado o credenciales incorrectas
         showDialog(
           context: context,
           builder: (BuildContext context) {
+            final l10n = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: Text('Error de inicio de sesión'),
-              content: Text('Credenciales incorrectas. Verifica tu correo y contraseña.'),
+              title: Text(l10n.loginErrorTitle),
+              content: Text(l10n.loginErrorMessage),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cerrar'),
+                  child: Text(l10n.close),
                 ),
               ],
             );
@@ -81,15 +71,16 @@ class _AuthScreenState extends State<AuthScreen> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
+          final l10n = AppLocalizations.of(context)!;
           return AlertDialog(
-            title: Text('Error'),
-            content: Text('Hubo un error al conectar con la base de datos.'),
+            title: Text(l10n.error),
+            content: Text(l10n.databaseErrorMessage),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cerrar'),
+                child: Text(l10n.close),
               ),
             ],
           );
@@ -100,12 +91,11 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Método para construir la interfaz de AuthScreen.
+    final l10n = AppLocalizations.of(context)!;
+
     if (isLoggedIn) {
-      // Si el usuario ha iniciado sesión, muestra la pantalla HelloWorldScreen.
       return HelloWorldScreen();
     } else {
-      // Si no ha iniciado sesión, muestra la pantalla de inicio de sesión o registro.
       return Scaffold(
         appBar: AppBar(
           backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -122,7 +112,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
               Text(
-                '¡Gasta mejor, Ahorra más!',
+                l10n.appSlogan,
                 style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
               SizedBox(height: 5),
@@ -138,7 +128,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   onTap: () {
                     launchUrl(
                       Uri.parse('https://www.youtube.com/watch?v=1hj7XWHUNd0r'),
-                    ); // URL a abrir
+                    );
                   },
                   child: Image.asset(
                     'assets/images/logo.png',
@@ -147,28 +137,23 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ),
               ),
-
               SizedBox(height: 20),
-
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: TextField(
                   controller: emailController,
-                  decoration: InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(labelText: l10n.email),
                 ),
               ),
-
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: TextField(
                   controller: passwordController,
-                  decoration: InputDecoration(labelText: 'Password'),
+                  decoration: InputDecoration(labelText: l10n.password),
                   obscureText: true,
                 ),
               ),
-
-              SizedBox(height: 20), // Espacio antes del botón
-
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: login,
                 style: ElevatedButton.styleFrom(
@@ -177,24 +162,23 @@ class _AuthScreenState extends State<AuthScreen> {
                     145,
                     154,
                     1,
-                  ), // Color #06919A en RGB
-                  foregroundColor: Colors.white, // Color del texto
+                  ),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero, // Bordes cuadrados
+                    borderRadius: BorderRadius.zero,
                   ),
                   padding: EdgeInsets.symmetric(
                     horizontal: 40,
                     vertical: 15,
-                  ), // Tamaño del botón
+                  ),
                 ),
-                child: Text('Iniciar Sesión'),
+                child: Text(l10n.login),
               ),
-
               TextButton(
                 onPressed: register,
-                child: Text('¿No tienes una cuenta?'),
+                child: Text(l10n.noAccount),
               ),
-              TextButton(onPressed: register, child: Text('Regístrate aquí.')),
+              TextButton(onPressed: register, child: Text(l10n.registerHere)),
             ],
           ),
         ),
@@ -204,14 +188,11 @@ class _AuthScreenState extends State<AuthScreen> {
 }
 
 class HelloWorldScreen extends StatefulWidget {
-  //const HelloWorldScreen({super.key});
-
   @override
   _HelloWorldScreenState createState() => _HelloWorldScreenState();
 }
 
 class _HelloWorldScreenState extends State<HelloWorldScreen> {
-  // Define una clase llamada HelloWorldScreen que extiende StatelessWidget.
   @override
   int _selectedIndex = 0;
   void _onItemTapped(int index) {
@@ -220,16 +201,14 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
     });
 
     if (index == 2) {
-      // Redirige a la ruta raíz '/' y elimina todas las rutas anteriores
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     }
-
-    // Puedes manejar otros índices si es necesario
   }
 
   @override
   Widget build(BuildContext context) {
-    // Método para construir la interfaz de HelloWorldScreen.
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -238,7 +217,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Inicio',
+              l10n.home,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -249,7 +228,6 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
           ],
         ),
       ),
-
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -257,7 +235,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
             SizedBox(
               width: 300,
               child: Recuadro(
-                titulo: 'Ahorros Mensuales',
+                titulo: l10n.monthlySavings,
                 monto: '\$1,234.56',
                 porcentaje: '+12.34%',
               ),
@@ -266,7 +244,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
             SizedBox(
               width: 300,
               child: Recuadro(
-                titulo: 'Ahorro Objetivo',
+                titulo: l10n.goalSavings,
                 monto: '\$1,234.56',
                 porcentaje: '+12.34%',
               ),
@@ -275,7 +253,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
             SizedBox(
               width: 300,
               child: Recuadro(
-                titulo: 'Gastos',
+                titulo: l10n.expenses,
                 monto: '\$1,234.56',
                 porcentaje: '+12.34%',
               ),
@@ -292,8 +270,6 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Salir'),
         ],
       ),
-
-      //Circular menú
       floatingActionButton: CircularMenu(
         alignment: Alignment.bottomRight,
         toggleButtonColor: Colors.teal,
@@ -326,15 +302,12 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
   }
 }
 
-//pantalla configuración
-//clase recuadro pantalla principal
 class Recuadro extends StatelessWidget {
   final String titulo;
   final String monto;
   final String porcentaje;
 
   const Recuadro({
-    //super.key,
     required this.titulo,
     required this.monto,
     required this.porcentaje,
@@ -342,6 +315,8 @@ class Recuadro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       width: 600,
       decoration: BoxDecoration(
@@ -378,7 +353,3 @@ class Recuadro extends StatelessWidget {
     );
   }
 }
-
-
-
-
