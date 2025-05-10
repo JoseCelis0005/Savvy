@@ -39,6 +39,6 @@
   "amount": "Amount",
   "createAchievement": "Create Achievement",
   "reports": "Reports",
-  "search": "Search"
-  
+  "search": "Search",
+  "userNamePlaceholder": "Username"
 }

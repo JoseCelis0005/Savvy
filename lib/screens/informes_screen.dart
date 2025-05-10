@@ -95,6 +95,8 @@ class _UserInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -112,8 +114,11 @@ class _UserInfoSection extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Nombre Usuario',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                l10n.userNamePlaceholder,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),

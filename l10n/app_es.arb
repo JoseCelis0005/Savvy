@@ -39,7 +39,6 @@
   "amount": "Monto",
   "createAchievement": "Crear Logro",
   "reports": "Informes",
-  "search": "Buscar"
-  
-
+  "search": "Buscar",
+  "userNamePlaceholder": "Nombre Usuario"
 }

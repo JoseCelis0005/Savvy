@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class crear_logro extends StatefulWidget {
   @override
@@ -24,6 +25,8 @@ class _CrearLogroState extends State<crear_logro> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // Obtén la instancia
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -32,7 +35,7 @@ class _CrearLogroState extends State<crear_logro> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Crear Logro',
+              l10n.createAchievement, // Usa la clave traducida
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -54,7 +57,8 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: nombreController,
                       decoration: InputDecoration(
-                        labelText: 'Nombre',
+                        labelText:
+                            l10n.achievementName, // Usa la clave traducida
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -62,9 +66,9 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: fechaInicioController,
                       decoration: InputDecoration(
-                        labelText: 'Fecha de Inicio',
+                        labelText: l10n.startDate, // Usa la clave traducida
                         border: OutlineInputBorder(),
-                        hintText: 'DD/MM/AAAA',
+                        hintText: 'DD/MM/AAAA', // No se traduce, es un formato
                       ),
                       keyboardType: TextInputType.datetime,
                     ),
@@ -72,9 +76,9 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: fechaFinController,
                       decoration: InputDecoration(
-                        labelText: 'Fecha Fin',
+                        labelText: l10n.endDate, // Usa la clave traducida
                         border: OutlineInputBorder(),
-                        hintText: 'DD/MM/AAAA',
+                        hintText: 'DD/MM/AAAA', // No se traduce, es un formato
                       ),
                       keyboardType: TextInputType.datetime,
                     ),
@@ -82,7 +86,7 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: montoController,
                       decoration: InputDecoration(
-                        labelText: 'Monto',
+                        labelText: l10n.amount, // Usa la clave traducida
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
@@ -119,7 +123,7 @@ class _CrearLogroState extends State<crear_logro> {
                             vertical: 15,
                           ),
                         ),
-                        child: Text('Guardar'),
+                        child: Text(l10n.save), // Usa la clave traducida
                       ),
                     ),
                   ],
