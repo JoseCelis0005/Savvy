@@ -1,6 +1,9 @@
 // home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:circular_menu/circular_menu.dart'; // si usas esa librería
+import 'package:circular_menu/circular_menu.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class HelloWorldScreen extends StatefulWidget {
   @override
@@ -8,6 +11,7 @@ class HelloWorldScreen extends StatefulWidget {
 }
 
 class _HelloWorldScreenState extends State<HelloWorldScreen> {
+  
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -20,8 +24,23 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
     }
   }
 
+  String _formatCurrency(double value) {
+    final formatter = NumberFormat('#,##0.00', 'en_US');
+    return '\$' + formatter.format(value);
+  }
+
   @override
   Widget build(BuildContext context) {
+    
+    
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Inicio')),
+        body: Center(child: Text('Usuario no autenticado')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -41,19 +60,134 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
           children: <Widget>[
             SizedBox(
               width: 300,
-              child: Recuadro(
-                titulo: 'Ahorros Mensuales',
-                monto: '\$1,234.56',
-                porcentaje: '+12.34%',
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('agregados')
+                    .where('userId', isEqualTo: user?.uid) // Validación segura
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  // Obtener el mes y año actual
+                  final now = DateTime.now();
+                  final currentMonth = now.month;
+                  final currentYear = now.year;
+
+                  double totalMensual = 0;
+
+                  for (var doc in docs) {
+                    final fechaStr = doc['fecha'];
+                    final valorStr = doc['valor_agregado'];
+
+                    // Parseamos la fecha (esperamos formato dd/MM/yyyy)
+                    try {
+                      final fecha = DateTime.parse(
+                        fechaStr.split('/').reversed.join('-'),
+                      );
+
+                      if (fecha.month == currentMonth && fecha.year == currentYear) {
+                        totalMensual += double.tryParse(valorStr.toString()) ?? 0;
+                      }
+                    } catch (e) {
+                      // Si el parseo falla, ignora ese documento
+                      continue;
+                    }
+                  }
+
+                  return Recuadro(
+                    titulo: 'Ahorros Mensuales',
+                    monto: _formatCurrency(totalMensual),
+                    porcentaje: '', // Si tienes una meta mensual, puedes calcular el porcentaje aquí
+                  );
+                },
               ),
             ),
             SizedBox(height: 20),
             SizedBox(
               width: 300,
-              child: Recuadro(
-                titulo: 'Ahorro Objetivo',
-                monto: '\$1,234.56',
-                porcentaje: '+12.34%',
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('achievements')
+                    .where('userId', isEqualTo: user?.uid)
+                    .snapshots(),
+                builder: (context, snapshotObjetivos) {
+                  if (!snapshotObjetivos.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  final docsObjetivos = snapshotObjetivos.data!.docs;
+
+                  double totalObjetivo = docsObjetivos.fold(0, (sum, doc) {
+                    final monto = doc['monto'];
+                    return sum + (double.tryParse(monto.toString()) ?? 0);
+                  });
+
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('agregados') // Reemplaza con el nombre correcto
+                        .where('userId', isEqualTo: user?.uid)
+                        .snapshots(),
+                    builder: (context, snapshotAgregados) {
+                      if (!snapshotAgregados.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      final docsAgregados = snapshotAgregados.data!.docs;
+
+                      final now = DateTime.now();
+                      final currentMonth = now.month;
+                      final currentYear = now.year;
+
+                      double totalAgregado = 0;
+
+                      for (var doc in docsAgregados) {
+                        Timestamp ts = doc['created_at'];
+                        DateTime fecha = ts.toDate();
+
+                        if (fecha.month == currentMonth && fecha.year == currentYear) {
+                          final valor = doc['valor_agregado'];
+                          totalAgregado += double.tryParse(valor.toString()) ?? 0;
+                        }
+                      }
+
+                      double porcentaje = totalObjetivo > 0
+                          ? (totalAgregado / totalObjetivo).clamp(0, 1)
+                          : 0;
+
+                      Color color;
+                      if (porcentaje <= 0.3) {
+                        color = Colors.red;
+                      } else if (porcentaje <= 0.6) {
+                        color = Colors.yellow.shade700;
+                      } else {
+                        color = Colors.green;
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Recuadro(
+                            titulo: 'Ahorros Mensuales',
+                            monto: _formatCurrency(totalObjetivo),
+                            porcentaje: '${(porcentaje * 100).toStringAsFixed(1)}%',
+                          ),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: porcentaje,
+                            backgroundColor: Colors.grey.shade300,
+                            color: color,
+                            minHeight: 10,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ),
             SizedBox(height: 20),
