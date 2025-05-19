@@ -1,34 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class RegisterScreen extends StatelessWidget {
-  //const RegisterScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
 
-  // Define una clase llamada RegisterScreen que extiende StatelessWidget.
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController registerEmailController = TextEditingController();
+  final TextEditingController registerPasswordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    // Método para construir la interfaz de RegisterScreen.
-    TextEditingController registerEmailController = TextEditingController(); // Controlador para el correo electrónico de registro.
-    TextEditingController registerPasswordController = TextEditingController(); // Controlador para la contraseña de registro.
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
         centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Registro',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 5),
-          ],
-        ),
+        title: Text('Registro', style: TextStyle(color: Colors.white)),
       ),
       body: Center(
         child: Column(
@@ -41,58 +30,62 @@ class RegisterScreen extends StatelessWidget {
                 decoration: InputDecoration(labelText: 'Correo Electrónico'),
               ),
             ),
-
             Container(
               padding: EdgeInsets.symmetric(horizontal: 40),
               child: TextField(
                 controller: registerPasswordController,
                 decoration: InputDecoration(labelText: 'Contraseña'),
-                obscureText: true, // Oculta el texto de la contraseña.
+                obscureText: true,
               ),
             ),
-
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () async  {
-                final email = registerEmailController.text.trim(); // Obtiene el correo electrónico ingresado.
-                final password  = registerPasswordController.text.trim(); // Obtiene la contraseña ingresada.
-                
-                await FirebaseFirestore.instance.collection('users').add({
-                  'email': email,
-                  'password': password, // ¡Recuerda! Nunca guardes contraseñas así en producción
-                  'created_at': Timestamp.now(),
-                });
+              onPressed: () async {
+                try {
+                  final email = registerEmailController.text.trim();
+                  final password = registerPasswordController.text.trim();
 
-                Navigator.pop(context);
-                
-                /*final result = {
-                  'email': email,
-                  'password': password ,
-                }; // Crea un mapa con los datos de registro.*/
+                  if (email.isEmpty || password.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Por favor completa todos los campos')),
+                    );
+                    return;
+                  }
 
-                /*Navigator.pop(
-                  context,
-                  result,
-                );*/
-                 // Cierra la pantalla de registro y devuelve los datos al estado anterior.
+                  UserCredential userCredential = await FirebaseAuth.instance
+                      .createUserWithEmailAndPassword(email: email, password: password);
+
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userCredential.user!.uid)
+                      .set({
+                    'email': email,
+                    'created_at': Timestamp.now(),
+                  });
+
+                  if (!mounted) return;
+
+                  // Quitar snackbar temporalmente
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   SnackBar(content: Text('¡Registro exitoso!')),
+                  // );
+
+                  print('Registro exitoso. Navegando a /');
+
+                  Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+
+                } on FirebaseAuthException catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${e.message}')),
+                  );
+                }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromRGBO(
-                  6,
-                  145,
-                  154,
-                  1,
-                ), // Color #06919A en RGB
-                foregroundColor: Colors.white, // Color del texto
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero, // Bordes cuadrados
-                ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 15,
-                ), // Tamaño del botón
-              ),
               child: Text('Registrarse'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color.fromRGBO(6, 145, 154, 1),
+                foregroundColor: Colors.white,
+              ),
             ),
           ],
         ),

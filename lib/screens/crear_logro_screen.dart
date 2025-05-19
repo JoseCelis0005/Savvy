@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:circular_menu/circular_menu.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'package:circular_menu/circular_menu.dart';
 
 class crear_logro extends StatefulWidget {
   @override
@@ -13,6 +18,21 @@ class _CrearLogroState extends State<crear_logro> {
   final TextEditingController fechaFinController = TextEditingController();
   final TextEditingController montoController = TextEditingController();
 
+  XFile? _imageFile;
+
+  Future<void> _pickDate(TextEditingController controller) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      controller.text = DateFormat('dd/MM/yyyy').format(picked);
+    }
+  }
+
   @override
   void dispose() {
     nombreController.dispose();
@@ -22,8 +42,31 @@ class _CrearLogroState extends State<crear_logro> {
     super.dispose();
   }
 
+  Future<void> pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    }
+  }
+
+  Future<String?> uploadImage(String userId) async {
+    if (_imageFile == null) return null;
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('user_images/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+    final uploadTask = storageRef.putFile(File(_imageFile!.path));
+    final snapshot = await uploadTask;
+    return await snapshot.ref.getDownloadURL();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final NumberFormat currencyFormatter = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -51,6 +94,15 @@ class _CrearLogroState extends State<crear_logro> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
+                    _imageFile == null
+                        ? Text('No has seleccionado una imagen')
+                        : Image.file(File(_imageFile!.path), height: 150),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: pickImage,
+                      child: Text('Seleccionar imagen'),
+                    ),
+                    SizedBox(height: 16),
                     TextFormField(
                       controller: nombreController,
                       decoration: InputDecoration(
@@ -59,48 +111,87 @@ class _CrearLogroState extends State<crear_logro> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    TextFormField(
-                      controller: fechaInicioController,
-                      decoration: InputDecoration(
-                        labelText: 'Fecha de Inicio',
-                        border: OutlineInputBorder(),
-                        hintText: 'DD/MM/AAAA',
+                    InkWell(
+                      onTap: () => _pickDate(fechaInicioController),
+                      child: IgnorePointer(
+                        child: TextFormField(
+                          controller: fechaInicioController,
+                          decoration: InputDecoration(
+                            labelText: 'Fecha de Inicio',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                       ),
-                      keyboardType: TextInputType.datetime,
                     ),
                     SizedBox(height: 16),
-                    TextFormField(
-                      controller: fechaFinController,
-                      decoration: InputDecoration(
-                        labelText: 'Fecha Fin',
-                        border: OutlineInputBorder(),
-                        hintText: 'DD/MM/AAAA',
+                    InkWell(
+                      onTap: () => _pickDate(fechaFinController),
+                      child: IgnorePointer(
+                        child: TextFormField(
+                          controller: fechaFinController,
+                          decoration: InputDecoration(
+                            labelText: 'Fecha Fin',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                       ),
-                      keyboardType: TextInputType.datetime,
                     ),
                     SizedBox(height: 16),
-                    TextFormField(
+                    /*TextFormField(
+                      controller: montoController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Monto (COP)',
+                        border: OutlineInputBorder(),
+                      ),
+                      /*onChanged: (value) {
+                        final parsed = int.tryParse(value.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+                        montoController.value = TextEditingValue(
+                          text: currencyFormatter.format(parsed),
+                          selection: TextSelection.collapsed(offset: currencyFormatter.format(parsed).length),
+                        );
+                      },*/
+                    ),*/
+                     TextFormField(
                       controller: montoController,
                       decoration: InputDecoration(
-                        labelText: 'Monto',
+                        labelText: 'Monto (COP)',
                         border: OutlineInputBorder(),
                       ),
-                      keyboardType: TextInputType.number,
                     ),
                     SizedBox(height: 32),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          final nombre = nombreController.text;
-                          final fechaInicio = fechaInicioController.text;
-                          final fechaFin = fechaFinController.text;
-                          final monto = montoController.text;
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Debes iniciar sesión primero')),
+                            );
+                            return;
+                          }
+
+                          final nombre = nombreController.text.trim();
+                          final fechaInicio = fechaInicioController.text.trim();
+                          final fechaFin = fechaFinController.text.trim();
+                          final monto = montoController.text.replaceAll(RegExp(r'[^\d]'), '').trim();
+
+                          if ([nombre, fechaInicio, fechaFin, monto].any((v) => v.isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Por favor completa todos los campos')),
+                            );
+                            return;
+                          }
+
+                          String? imageUrl = await uploadImage(user.uid);
 
                           await FirebaseFirestore.instance.collection('achievements').add({
+                            'userId': user.uid,
                             'name_logro': nombre,
                             'fec_inicio': fechaInicio,
                             'fec_fin': fechaFin,
                             'monto': monto,
+                            'photoUrl': imageUrl,
                             'created_at': Timestamp.now(),
                           });
 

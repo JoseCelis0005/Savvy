@@ -5,6 +5,8 @@ import '../screens/logros_screen.dart';
 import '../screens/informes_screen.dart';
 import '../screens/configuracion_screen.dart';
 import '../screens/crear_logro_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/test_screen.dart';
 
 class AppRoutes {
   static const initialRoute = '/';
@@ -12,6 +14,8 @@ class AppRoutes {
   static final routes = <String, WidgetBuilder>{
     '/': (context) => AuthScreen(),
     '/register': (context) => RegisterScreen(),
+    '/home': (context) => HelloWorldScreen(),
+    '/test': (context) => TestScreen(),
     '/logros': (context) => LogrosScreen(),
     '/informes': (context) => InformesScreen(),
     '/configuracion': (context) => ConfiguracionScreen(),
