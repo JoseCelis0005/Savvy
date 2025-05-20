@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:circular_menu/circular_menu.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class crear_logro extends StatefulWidget {
   @override
@@ -65,6 +66,7 @@ class _CrearLogroState extends State<crear_logro> {
 
   @override
   Widget build(BuildContext context) {
+  	final l10n = AppLocalizations.of(context)!; // Obtén la instancia
     final NumberFormat currencyFormatter = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
 
     return Scaffold(
@@ -75,7 +77,7 @@ class _CrearLogroState extends State<crear_logro> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Crear Logro',
+              l10n.createAchievement, // Usa la clave traducida
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -106,7 +108,8 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: nombreController,
                       decoration: InputDecoration(
-                        labelText: 'Nombre',
+                        labelText:
+                            l10n.achievementName, // Usa la clave traducida
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -117,7 +120,7 @@ class _CrearLogroState extends State<crear_logro> {
                         child: TextFormField(
                           controller: fechaInicioController,
                           decoration: InputDecoration(
-                            labelText: 'Fecha de Inicio',
+                            labelText: l10n.startDate, // Usa la clave traducida
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -130,32 +133,17 @@ class _CrearLogroState extends State<crear_logro> {
                         child: TextFormField(
                           controller: fechaFinController,
                           decoration: InputDecoration(
-                            labelText: 'Fecha Fin',
+                            labelText: l10n.endDate, // Usa la clave traducida
                             border: OutlineInputBorder(),
                           ),
                         ),
                       ),
                     ),
                     SizedBox(height: 16),
-                    /*TextFormField(
-                      controller: montoController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Monto (COP)',
-                        border: OutlineInputBorder(),
-                      ),
-                      /*onChanged: (value) {
-                        final parsed = int.tryParse(value.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
-                        montoController.value = TextEditingValue(
-                          text: currencyFormatter.format(parsed),
-                          selection: TextSelection.collapsed(offset: currencyFormatter.format(parsed).length),
-                        );
-                      },*/
-                    ),*/
-                     TextFormField(
+                    TextFormField(
                       controller: montoController,
                       decoration: InputDecoration(
-                        labelText: 'Monto (COP)',
+                        labelText: l10n.amount, // Usa la clave traducida
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -208,7 +196,7 @@ class _CrearLogroState extends State<crear_logro> {
                             vertical: 15,
                           ),
                         ),
-                        child: Text('Guardar'),
+                        child: Text(l10n.save), // Usa la clave traducida
                       ),
                     ),
                   ],

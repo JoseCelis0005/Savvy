@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // <-- IMPORTANTE
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -35,8 +37,25 @@ class _AuthScreenState extends State<AuthScreen> {
       print('Error FirebaseAuthException: ${e.message}');
       _mostrarAlerta('Error Firebase: ${e.message}');
     } catch (e) {
-      print('Error inesperado: $e');
-      _mostrarAlerta('Error inesperado: $e');
+      print('Error al intentar iniciar sesión: $e');
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final l10n = AppLocalizations.of(context)!;
+          return AlertDialog(
+            title: Text(l10n.error),
+            content: Text(l10n.databaseErrorMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(l10n.close),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
@@ -58,6 +77,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+  	final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -74,7 +95,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
             Text(
-              '¡Gasta mejor, Ahorra más!',
+              l10n.appSlogan,
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             SizedBox(height: 5),
@@ -101,14 +122,14 @@ class _AuthScreenState extends State<AuthScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: TextField(
                   controller: emailController,
-                  decoration: InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(labelText: l10n.email),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40),
                 child: TextField(
                   controller: passwordController,
-                  decoration: InputDecoration(labelText: 'Password'),
+                  decoration: InputDecoration(labelText: l10n.password),
                   obscureText: true,
                 ),
               ),
@@ -121,12 +142,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                 ),
-                child: Text('Iniciar Sesión'),
+                child: Text(l10n.login),
               ),
               TextButton(
                 onPressed: register,
-                child: Text('¿No tienes una cuenta? Regístrate aquí.'),
+                child: Text(l10n.noAccount),
               ),
+              TextButton(onPressed: register, child: Text(l10n.registerHere)),
             ],
           ),
         ),

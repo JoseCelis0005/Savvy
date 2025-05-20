@@ -3,6 +3,7 @@ import 'package:circular_menu/circular_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importante!
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
@@ -10,6 +11,7 @@ class LogrosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  	final l10n = AppLocalizations.of(context)!; // Obtén la instancia
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Center(child: Text('Usuario no autenticado'));
@@ -17,11 +19,6 @@ class LogrosScreen extends StatelessWidget {
     final uid = user.uid;
 
     return Scaffold(
-      /*appBar: AppBar(
-        title: Text('TUS LOGROS'),
-        automaticallyImplyLeading:
-            false, // Opcional: Quita la flecha de "volver" automática
-      ),*/
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
         centerTitle: true,
@@ -29,7 +26,7 @@ class LogrosScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Tus Logros',
+              l10n.achievements, // Usa la clave traducida
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -60,7 +57,7 @@ class LogrosScreen extends StatelessWidget {
               ),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Buscar',
+                  hintText: l10n.search, // Usa la clave traducida
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
@@ -108,30 +105,12 @@ class LogrosScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  /*LogroItem(
-                    imagen:
-                        'assets/images/vacaciones.jpg', // Reemplaza con tus rutas de imágenes
-                    titulo: 'VACACIONES',
-                    monto: '\$3.200.000',
-                  ),
-                  SizedBox(height: 12.0),
-                  LogroItem(
-                    imagen: 'assets/images/casa.jpg',
-                    titulo: 'CASA',
-                    monto: '\$500.000',
-                  ),
-                  SizedBox(height: 12.0),
-                  LogroItem(
-                    imagen: 'assets/images/casa.jpg',
-                    titulo: 'NEGOCIO',
-                    monto: '\$1.000.000',
-                  ),*/
                   SizedBox(height: 12.0),
                   LogroItem(
                     userId: uid,
                     id: '0',
                     imagenUrl: 'assets/images/logro.png',
-                    titulo: 'Nuevo Logro',
+                    titulo: l10n.newAchievement, // Usa la clave traducida
                     monto: '',
                     isNew: true,
                   ),
