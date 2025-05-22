@@ -1,112 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:circular_menu/circular_menu.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class InformesScreen extends StatefulWidget {
-  @override
-  _InformesScreen createState() => _InformesScreen();
-}
-
-//pantalla informes
-class _InformesScreen extends State<InformesScreen> {
-  //const InformesScreen({super.key});
+class InformesScreen extends StatelessWidget {
+  const InformesScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    if (l10n == null) {
+      return const Center(child: Text('Error: Localizations not found!'));
+    }
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(6, 145, 154, 1),
+        title: Text(l10n.reports),
+        backgroundColor: Colors.teal,
         centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Informes',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 5),
-          ],
-        ),
       ),
-      body: // Aquí va el código para mostrar la pantalla de logros
-      //  ... (Código de la pantalla de logros de la imagen)
-      Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              margin: EdgeInsets.only(bottom: 30),
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.teal.shade100,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Text(
-                'Mis Informes',
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal.shade900,
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 300,
-              child: Recuadro(
-                titulo: 'Semanal',
-                monto: '\$0',
-                porcentaje: '+0%',
-              ),
-            ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: 300,
-              child: Recuadro(
-                titulo: 'Mensual',
-                monto: '\$0',
-                porcentaje: '+0%',
-              ),
-            ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: 300,
-              child: Recuadro(
-                titulo: 'Anual',
-                monto: '\$0',
-                porcentaje: '+0%',
+            const _UserInfoSection(),
+            const SizedBox(height: 20),
+            const _SearchBar(),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView(
+                children: [
+                  _ReportCard(
+                    title: l10n.weekly,
+                    amount: '\$0',
+                    percentage: '+0%',
+                    imagePath: 'assets/images/informe.png',
+                  ),
+                  const SizedBox(height: 16),
+                  _ReportCard(
+                    title: l10n.monthly,
+                    amount: '\$',
+                    percentage: '+%',
+                    imagePath: 'assets/images/informe.png',
+                  ),
+                  const SizedBox(height: 16),
+                  _ReportCard(
+                    title: l10n.yearly,
+                    amount: '\$0',
+                    percentage: '+0%',
+                    imagePath: 'assets/images/informe.png',
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.attach_money),
-              onPressed: () {
-                Navigator.pushNamed(context, '/informes');
-              },
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: const _BottomNavigationBar(),
       floatingActionButton: CircularMenu(
         alignment: Alignment.bottomRight,
         toggleButtonColor: Colors.teal,
@@ -139,50 +90,167 @@ class _InformesScreen extends State<InformesScreen> {
   }
 }
 
-class Recuadro extends StatelessWidget {
-  final String titulo;
-  final String monto;
-  final String porcentaje;
+class _UserInfoSection extends StatelessWidget {
+  const _UserInfoSection({Key? key}) : super(key: key);
 
-  const Recuadro({
-    //super.key,
-    required this.titulo,
-    required this.monto,
-    required this.porcentaje,
-  });
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.teal.shade50,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                backgroundImage: AssetImage('assets/images/informe.png'),
+                radius: 25,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.userNamePlaceholder,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  const _SearchBar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: l10n.search,
+          prefixIcon: const Icon(Icons.search),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 12.0,
+            horizontal: 16.0,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReportCard extends StatelessWidget {
+  final String title;
+  final String amount;
+  final String percentage;
+  final String imagePath;
+
+  const _ReportCard({
+    Key? key,
+    required this.title,
+    required this.amount,
+    required this.percentage,
+    required this.imagePath,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 600,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.teal.shade200,
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(10),
       ),
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            titulo,
-            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w800),
-          ),
-          SizedBox(height: 8.0),
-          Text(
-            monto,
-            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8.0),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(4.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  amount,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  percentage,
+                  style: const TextStyle(fontSize: 14, color: Colors.green),
+                ),
+              ],
             ),
-            child: Text(
-              porcentaje,
-              style: TextStyle(fontSize: 12.0, color: Colors.white),
-            ),
+          ),
+          const SizedBox(width: 16),
+          Image.asset(imagePath, width: 120, height: 90, fit: BoxFit.cover),
+        ],
+      ),
+    );
+  }
+}
+
+class _BottomNavigationBar extends StatelessWidget {
+  const _BottomNavigationBar({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/');
+            },
+          ),
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.dollarSign),
+            onPressed: () {
+              Navigator.pushNamed(context, '/informes');
+            },
           ),
         ],
       ),
