@@ -9,7 +9,8 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController registerEmailController = TextEditingController();
-  final TextEditingController registerPasswordController = TextEditingController();
+  final TextEditingController registerPasswordController =
+      TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -47,33 +48,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   if (email.isEmpty || password.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Por favor completa todos los campos')),
+                      SnackBar(
+                        content: Text('Por favor completa todos los campos'),
+                      ),
                     );
                     return;
                   }
 
                   UserCredential userCredential = await FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(email: email, password: password);
+                      .createUserWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
 
                   await FirebaseFirestore.instance
                       .collection('users')
                       .doc(userCredential.user!.uid)
-                      .set({
-                    'email': email,
-                    'created_at': Timestamp.now(),
-                  });
+                      .set({'email': email, 'created_at': Timestamp.now()});
 
                   if (!mounted) return;
-
-                  // Quitar snackbar temporalmente
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   SnackBar(content: Text('¡Registro exitoso!')),
-                  // );
-
-                  print('Registro exitoso. Navegando a /');
-
-                  Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-
                 } on FirebaseAuthException catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(

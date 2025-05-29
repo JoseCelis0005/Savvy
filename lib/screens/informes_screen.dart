@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:circular_menu/circular_menu.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // <-- ¡IMPORTANTE! Importar Firebase Auth
 
 class InformesScreen extends StatelessWidget {
   const InformesScreen({Key? key}) : super(key: key);
@@ -14,6 +15,12 @@ class InformesScreen extends StatelessWidget {
       return const Center(child: Text('Error: Localizations not found!'));
     }
 
+    // Obtener el usuario actualmente autenticado
+    final user = FirebaseAuth.instance.currentUser;
+    final userName =
+        user?.email ??
+        l10n.userNamePlaceholder; // Usar el email o un placeholder
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.reports),
@@ -24,7 +31,10 @@ class InformesScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const _UserInfoSection(),
+            // Pasamos el userEmail a _UserInfoSection
+            _UserInfoSection(
+              userName: userName,
+            ), // <-- CAMBIO AQUÍ: Pasando el nombre de usuario
             const SizedBox(height: 20),
             const _SearchBar(),
             const SizedBox(height: 20),
@@ -91,11 +101,14 @@ class InformesScreen extends StatelessWidget {
 }
 
 class _UserInfoSection extends StatelessWidget {
-  const _UserInfoSection({Key? key}) : super(key: key);
+  // AÑADIDO: Campo para recibir el nombre de usuario
+  final String userName;
+  const _UserInfoSection({Key? key, required this.userName})
+    : super(key: key); // <-- CAMBIO AQUÍ
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    // final l10n = AppLocalizations.of(context)!; // Ya no necesitas el placeholder de l10n aquí
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -114,7 +127,7 @@ class _UserInfoSection extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                l10n.userNamePlaceholder,
+                userName, // <-- CAMBIO AQUÍ: Usando el userName pasado
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importante!
+import 'package:savvy/main.dart';
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class LogrosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  	final l10n = AppLocalizations.of(context)!; // Obtén la instancia
+    final l10n = AppLocalizations.of(context)!; // Obtén la instancia
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Center(child: Text('Usuario no autenticado'));
@@ -74,10 +75,11 @@ class LogrosScreen extends StatelessWidget {
               child: ListView(
                 children: [
                   StreamBuilder(
-                     stream: FirebaseFirestore.instance
-                      .collection('achievements')
-                      .where('userId', isEqualTo: uid)
-                      .snapshots(),
+                    stream:
+                        FirebaseFirestore.instance
+                            .collection('achievements')
+                            .where('userId', isEqualTo: uid)
+                            .snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
@@ -86,22 +88,29 @@ class LogrosScreen extends StatelessWidget {
                         return Center(child: Text('No achievements found.'));
                       }
                       return Column(
-                        children: snapshot.data!.docs.map((doc) {
-                          final photoUrl = doc['photoUrl'] ?? 'assets/images/logro.png';  // URL de la imagen
-                          return Column(
-                            children: [
-                              LogroItem(
-                                userId: uid,
-                                id: doc.id,
-                                imagenUrl: photoUrl,
-                                titulo: _capitalizeFirstLetter(doc['name_logro'] ?? 'Sin Título'),
-                                monto: _formatCurrency(doc['monto']?.toString() ?? '0'),
-                                // puedes pasar otras cosas como fec_inicio, fec_fin si quieres
-                              ),
-                              SizedBox(height: 12.0),
-                            ],
-                          );
-                        }).toList(),
+                        children:
+                            snapshot.data!.docs.map((doc) {
+                              final photoUrl =
+                                  doc['photoUrl'] ??
+                                  'assets/images/logro.png'; // URL de la imagen
+                              return Column(
+                                children: [
+                                  LogroItem(
+                                    userId: uid,
+                                    id: doc.id,
+                                    imagenUrl: photoUrl,
+                                    titulo: _capitalizeFirstLetter(
+                                      doc['name_logro'] ?? 'Sin Título',
+                                    ),
+                                    monto: _formatCurrency(
+                                      doc['monto']?.toString() ?? '0',
+                                    ),
+                                    // puedes pasar otras cosas como fec_inicio, fec_fin si quieres
+                                  ),
+                                  SizedBox(height: 12.0),
+                                ],
+                              );
+                            }).toList(),
                       );
                     },
                   ),
@@ -215,30 +224,32 @@ class _LogroItemState extends State<LogroItem> {
   }
 
   Future<void> _calcularProgreso() async {
-   final snapshot = await FirebaseFirestore.instance
-    .collection('agregados')
-    .where('achievementId', isEqualTo: widget.id)
-    .get();
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('agregados')
+            .where('achievementId', isEqualTo: widget.id)
+            .get();
 
     // Paso 1: Elimina el símbolo de moneda y espacios
-      String montoLimpio = widget.monto
-          .replaceAll('\$', '')     // elimina el símbolo de pesos si está
-          .replaceAll(' ', '');     // elimina espacios
+    String montoLimpio = widget.monto
+        .replaceAll('\$', '') // elimina el símbolo de pesos si está
+        .replaceAll(' ', ''); // elimina espacios
 
-      // Paso 2: Separa por coma y toma la parte entera
-      if (montoLimpio.contains(',')) {
-        montoLimpio = montoLimpio.split(',')[0]; // "200.000"
-      }
+    // Paso 2: Separa por coma y toma la parte entera
+    if (montoLimpio.contains(',')) {
+      montoLimpio = montoLimpio.split(',')[0]; // "200.000"
+    }
 
-      // Paso 3: Elimina los puntos (separadores de miles)
-      montoLimpio = montoLimpio.replaceAll('.', ''); // "200000"
+    // Paso 3: Elimina los puntos (separadores de miles)
+    montoLimpio = montoLimpio.replaceAll('.', ''); // "200000"
 
-      // Paso 4: Convertir a entero
-      final montoObjetivo = int.tryParse(montoLimpio) ?? 0;
+    // Paso 4: Convertir a entero
+    final montoObjetivo = int.tryParse(montoLimpio) ?? 0;
 
     int totalAgregado = 0;
     for (var doc in snapshot.docs) {
-      totalAgregado += int.tryParse(doc['valor_agregado']?.toString() ?? '0') ?? 0;
+      totalAgregado +=
+          int.tryParse(doc['valor_agregado']?.toString() ?? '0') ?? 0;
     }
 
     if (montoObjetivo > 0) {
@@ -278,11 +289,12 @@ class _LogroItemState extends State<LogroItem> {
     }
 
     return GestureDetector(
-      onTap: widget.isNew
-          ? () {
-              Navigator.pushNamed(context, '/crear-logro');
-            }
-          : null,
+      onTap:
+          widget.isNew
+              ? () {
+                Navigator.pushNamed(context, '/crear-logro');
+              }
+              : null,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -316,10 +328,7 @@ class _LogroItemState extends State<LogroItem> {
                     if (!widget.isNew) ...[
                       Text(
                         widget.monto,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.green,
-                        ),
+                        style: TextStyle(fontSize: 16.0, color: Colors.green),
                       ),
                       SizedBox(height: 6.0),
                       LinearProgressIndicator(
@@ -331,7 +340,10 @@ class _LogroItemState extends State<LogroItem> {
                       SizedBox(height: 4.0),
                       Text(
                         "${(progreso * 100).toStringAsFixed(0)}% completado",
-                        style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ],
@@ -347,7 +359,12 @@ class _LogroItemState extends State<LogroItem> {
                       icon: Icon(Icons.add),
                       color: Colors.teal,
                       onPressed: () {
-                        _mostrarDialogoAgregarMonto(context, widget.id, widget.monto, widget.userId);
+                        _mostrarDialogoAgregarMonto(
+                          context,
+                          widget.id,
+                          widget.monto,
+                          widget.userId,
+                        );
                       },
                     ),
                     IconButton(
@@ -383,73 +400,109 @@ String _formatCurrency(String amount) {
 }
 
 void _mostrarDialogoAgregarMonto(
-    BuildContext context, String docId, dynamic montoActual, String userId) {
+  BuildContext context,
+  String docId,
+  dynamic montoActual,
+  String userId,
+) {
   final controller = TextEditingController();
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Agregar monto'),
-      content: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(labelText: 'Monto adicional (COP)'),
-      ),
-      actions: [
-        TextButton(
-          child: Text('Cancelar'),
-          onPressed: () => Navigator.pop(context),
+    builder:
+        (context) => AlertDialog(
+          title: Text('Agregar monto'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(labelText: 'Monto adicional (COP)'),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: Text('Agregar'),
+              onPressed: () async {
+                final nuevoMonto = int.tryParse(controller.text) ?? 0;
+
+                final ahora = DateTime.now();
+                final fecha =
+                    "${ahora.day.toString().padLeft(2, '0')}/${ahora.month.toString().padLeft(2, '0')}/${ahora.year}";
+                final hora =
+                    "${ahora.hour.toString().padLeft(2, '0')}:${ahora.minute.toString().padLeft(2, '0')}:${ahora.second.toString().padLeft(2, '0')}";
+
+                // Guardar en subcolección "agregados"
+                await FirebaseFirestore.instance
+                    .collection('agregados') // colección independiente
+                    .add({
+                      'valor_agregado': nuevoMonto.toString(),
+                      'fecha': fecha,
+                      'hora': hora,
+                      'userId': userId,
+                      'achievementId': docId,
+                      'created_at': ahora,
+                    });
+
+                DocumentSnapshot? achievementDoc;
+                try {
+                  achievementDoc =
+                      await FirebaseFirestore.instance
+                          .collection('achievements')
+                          .doc(docId)
+                          .get();
+                } catch (e) {
+                  debugPrint(
+                    'Error al obtener el logro para la notificación: $e',
+                  );
+                }
+
+                final nombreLogro =
+                    achievementDoc?['name_logro'] ??
+                    'tu meta'; // Valor por defecto si no se encuentra el nombre
+
+                // NOTIFICACIÓN: "¡Vas por excelente camino! 🎉 ¡Sigue así para alcanzar tu meta [nombre_logro]!"
+                notificationService.showInstantNotification(
+                  id: DateTime.now().millisecondsSinceEpoch ~/ 1000, // ID único
+                  title: '¡Excelente progreso! 🎉', // Título de la notificación
+                  body: '¡Sigue ahorrando para tu meta $nombreLogro!',
+                  payload:
+                      'monto_agregado_incentivo', // Payload para seguimiento
+                );
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
-        TextButton(
-          child: Text('Agregar'),
-          onPressed: () async {
-            final nuevoMonto = int.tryParse(controller.text) ?? 0;
-
-            final ahora = DateTime.now();
-            final fecha = "${ahora.day.toString().padLeft(2, '0')}/${ahora.month.toString().padLeft(2, '0')}/${ahora.year}";
-            final hora = "${ahora.hour.toString().padLeft(2, '0')}:${ahora.minute.toString().padLeft(2, '0')}:${ahora.second.toString().padLeft(2, '0')}";
-
-            // Guardar en subcolección "agregados"
-            await FirebaseFirestore.instance
-              .collection('agregados')  // colección independiente
-              .add({
-                'valor_agregado': nuevoMonto.toString(),
-                'fecha': fecha,
-                'hora': hora,
-                'userId': userId,
-                'achievementId': docId,
-                'created_at': ahora,
-              });
-
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    ),
   );
 }
 
 void _confirmarEliminarLogro(BuildContext context, String docId) {
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text('¿Eliminar logro?'),
-      content: Text('¿Estás seguro de que deseas eliminar este logro? Esta acción no se puede deshacer.'),
-      actions: [
-        TextButton(
-          child: Text('Cancelar'),
-          onPressed: () => Navigator.pop(context),
+    builder:
+        (context) => AlertDialog(
+          title: Text('¿Eliminar logro?'),
+          content: Text(
+            '¿Estás seguro de que deseas eliminar este logro? Esta acción no se puede deshacer.',
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('achievements')
+                    .doc(docId)
+                    .delete();
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
-        TextButton(
-          child: Text('Eliminar', style: TextStyle(color: Colors.red)),
-          onPressed: () async {
-            await FirebaseFirestore.instance.collection('achievements').doc(docId).delete();
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    ),
   );
 }
-
-
-
