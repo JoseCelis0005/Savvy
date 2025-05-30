@@ -9,6 +9,8 @@ import '../screens/configuracion/config_tema_screen.dart';
 import '../screens/configuracion/config_idioma_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/test_screen.dart';
+import '../screens/configuracion/config_moneda_screen.dart';
+import '../screens/configuracion/config_sesion_screen.dart';
 
 class AppRoutes {
   static const initialRoute = '/';
@@ -24,5 +26,7 @@ class AppRoutes {
     '/crear-logro': (context) => crear_logro(),
     '/config-tema': (_) => ConfigTemaScreen(),
     '/config-idioma': (_) => ConfigIdiomaScreen(),
+    '/config-moneda': (_) => const ConfigMonedaScreen(),
+    '/config-sesion': (context) => const ConfigSesionScreen(),
   };
 }

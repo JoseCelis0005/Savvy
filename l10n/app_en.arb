@@ -40,5 +40,12 @@
   "createAchievement": "Create Achievement",
   "reports": "Reports",
   "search": "Search",
-  "userNamePlaceholder": "Username"
+  "userNamePlaceholder": "Username",
+  "sessionSettings": "Session Settings",
+  "loggedInAs": "Logged in as",
+  "unknownUser": "Unknown User",
+  "logoutButton": "Log Out",
+  "logoutSuccess": "Logged out successfully!",
+  "logoutError": "Error logging out",
+  "cancel": "Cancel"
 }

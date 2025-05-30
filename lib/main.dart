@@ -10,6 +10,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:savvy/notificaciones/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:savvy/screens/configuracion/currency_provider.dart';
+import 'package:savvy/screens/configuracion/config_sesion_screen.dart';
 
 // Instancia global de notificaciones
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -102,6 +104,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeModel()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
       ],
       child: const MyApp(),
     ),

@@ -40,5 +40,12 @@
   "createAchievement": "Crear Logro",
   "reports": "Informes",
   "search": "Buscar",
-  "userNamePlaceholder": "Nombre Usuario"
+  "userNamePlaceholder": "Nombre de Usuario",
+  "sessionSettings": "Configuración de Sesión",
+  "loggedInAs": "Sesión iniciada como",
+  "unknownUser": "Usuario Desconocido",
+  "logoutButton": "Cerrar Sesión",
+  "logoutSuccess": "Sesión cerrada con éxito!",
+  "logoutError": "Error al cerrar sesión",
+  "cancel": "Cancelar"
 }

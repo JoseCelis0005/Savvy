@@ -2,10 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:circular_menu/circular_menu.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <-- ¡IMPORTANTE! Importar Firebase Auth
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart'; // Importar Provider
+import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importar tu CurrencyProvider
+import 'package:intl/intl.dart'; // Importar para NumberFormat
 
 class InformesScreen extends StatelessWidget {
   const InformesScreen({Key? key}) : super(key: key);
+
+  // Helper para formatear la moneda (similar al de home_screen)
+  String _formatCurrency(double value, CurrencyProvider currencyProvider) {
+    final convertedValue = currencyProvider.convertAmount(value);
+    final currencySymbol = currencyProvider.getCurrencySymbol();
+
+    final formatter = NumberFormat.currency(
+      locale:
+          'es_CO', // Ajusta el locale si necesitas un formato de número diferente
+      symbol: currencySymbol, // Usa el símbolo personalizado: COP o US
+      decimalDigits:
+          currencyProvider.selectedDisplayCurrency == 'USD'
+              ? 2
+              : 0, // 2 decimales para USD, 0 para COP
+    );
+    return formatter.format(convertedValue);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +41,14 @@ class InformesScreen extends StatelessWidget {
         user?.email ??
         l10n.userNamePlaceholder; // Usar el email o un placeholder
 
+    // Accede al CurrencyProvider aquí
+    final currencyProvider = Provider.of<CurrencyProvider>(context);
+
+    // Valores de ejemplo para los montos (en tu moneda base, COP)
+    final double weeklyAmountCOP = 150000.0;
+    final double monthlyAmountCOP = 600000.0;
+    final double yearlyAmountCOP = 7200000.0;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.reports),
@@ -31,10 +59,7 @@ class InformesScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Pasamos el userEmail a _UserInfoSection
-            _UserInfoSection(
-              userName: userName,
-            ), // <-- CAMBIO AQUÍ: Pasando el nombre de usuario
+            _UserInfoSection(userName: userName),
             const SizedBox(height: 20),
             const _SearchBar(),
             const SizedBox(height: 20),
@@ -43,22 +68,29 @@ class InformesScreen extends StatelessWidget {
                 children: [
                   _ReportCard(
                     title: l10n.weekly,
-                    amount: '\$0',
-                    percentage: '+0%',
+                    // Pasa el monto base y el CurrencyProvider
+                    amountValue: weeklyAmountCOP,
+                    currencyProvider: currencyProvider,
+                    percentage:
+                        '+5%', // Puedes ajustar el porcentaje si es dinámico
                     imagePath: 'assets/images/informe.png',
                   ),
                   const SizedBox(height: 16),
                   _ReportCard(
                     title: l10n.monthly,
-                    amount: '\$',
-                    percentage: '+%',
+                    // Pasa el monto base y el CurrencyProvider
+                    amountValue: monthlyAmountCOP,
+                    currencyProvider: currencyProvider,
+                    percentage: '+10%',
                     imagePath: 'assets/images/informe.png',
                   ),
                   const SizedBox(height: 16),
                   _ReportCard(
                     title: l10n.yearly,
-                    amount: '\$0',
-                    percentage: '+0%',
+                    // Pasa el monto base y el CurrencyProvider
+                    amountValue: yearlyAmountCOP,
+                    currencyProvider: currencyProvider,
+                    percentage: '+15%',
                     imagePath: 'assets/images/informe.png',
                   ),
                 ],
@@ -101,15 +133,11 @@ class InformesScreen extends StatelessWidget {
 }
 
 class _UserInfoSection extends StatelessWidget {
-  // AÑADIDO: Campo para recibir el nombre de usuario
   final String userName;
-  const _UserInfoSection({Key? key, required this.userName})
-    : super(key: key); // <-- CAMBIO AQUÍ
+  const _UserInfoSection({Key? key, required this.userName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // final l10n = AppLocalizations.of(context)!; // Ya no necesitas el placeholder de l10n aquí
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -127,7 +155,7 @@ class _UserInfoSection extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                userName, // <-- CAMBIO AQUÍ: Usando el userName pasado
+                userName,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -179,17 +207,31 @@ class _SearchBar extends StatelessWidget {
 
 class _ReportCard extends StatelessWidget {
   final String title;
-  final String amount;
+  final double amountValue; // CAMBIO: Ahora recibe un double para el monto base
+  final CurrencyProvider currencyProvider; // CAMBIO: Recibe el CurrencyProvider
   final String percentage;
   final String imagePath;
 
   const _ReportCard({
     Key? key,
     required this.title,
-    required this.amount,
+    required this.amountValue, // CAMBIO
+    required this.currencyProvider, // CAMBIO
     required this.percentage,
     required this.imagePath,
   }) : super(key: key);
+
+  // Helper interno para formatear el monto
+  String _formatAmount(double value, CurrencyProvider provider) {
+    final convertedValue = provider.convertAmount(value);
+    final currencySymbol = provider.getCurrencySymbol();
+    final formatter = NumberFormat.currency(
+      locale: 'es_CO',
+      symbol: currencySymbol,
+      decimalDigits: provider.selectedDisplayCurrency == 'USD' ? 2 : 0,
+    );
+    return formatter.format(convertedValue);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +256,8 @@ class _ReportCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  amount,
+                  // Usar el nuevo método _formatAmount
+                  _formatAmount(amountValue, currencyProvider), // CAMBIO
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -262,7 +305,9 @@ class _BottomNavigationBar extends StatelessWidget {
           IconButton(
             icon: const Icon(FontAwesomeIcons.dollarSign),
             onPressed: () {
-              Navigator.pushNamed(context, '/informes');
+              // Si ya estás en /informes, no necesitas navegar de nuevo
+              // Puedes usar Navigator.pop() para volver al home si esa es la intención.
+              // O simplemente no hacer nada si ya estás aquí.
             },
           ),
         ],
