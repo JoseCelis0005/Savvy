@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
-<<<<<<< HEAD
-=======
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart'; // Importar Provider
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importar tu CurrencyProvider
 import 'package:intl/intl.dart'; // Importar para NumberFormat
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
 class InformesScreen extends StatefulWidget {
   @override
@@ -37,8 +34,6 @@ class _InformesScreen extends State<InformesScreen> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-=======
     final l10n = AppLocalizations.of(context);
 
     if (l10n == null) {
@@ -59,7 +54,6 @@ class _InformesScreen extends State<InformesScreen> {
     final double monthlyAmountCOP = 600000.0;
     final double yearlyAmountCOP = 7200000.0;
 
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -67,66 +61,6 @@ class _InformesScreen extends State<InformesScreen> {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-<<<<<<< HEAD
-            Text(
-              'Informes',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 5),
-          ],
-        ),
-      ),
-      body: // Aquí va el código para mostrar la pantalla de logros
-      //  ... (Código de la pantalla de logros de la imagen)
-      Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              margin: EdgeInsets.only(bottom: 30),
-              padding: EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.teal.shade100,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Text(
-                'Mis Informes',
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal.shade900,
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 300,
-              child: Recuadro(
-                titulo: 'Semanal',
-                monto: '\$0',
-                porcentaje: '+0%',
-              ),
-            ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: 300,
-              child: Recuadro(
-                titulo: 'Mensual',
-                monto: '\$0',
-                porcentaje: '+0%',
-              ),
-            ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: 300,
-              child: Recuadro(
-                titulo: 'Anual',
-                monto: '\$0',
-                porcentaje: '+0%',
-=======
             _UserInfoSection(userName: userName),
             const SizedBox(height: 20),
             const _SearchBar(),
@@ -162,7 +96,6 @@ class _InformesScreen extends State<InformesScreen> {
                     imagePath: 'assets/images/informe.png',
                   ),
                 ],
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
               ),
             ),
           ],
@@ -225,19 +158,7 @@ class _InformesScreen extends State<InformesScreen> {
   }
 }
 
-<<<<<<< HEAD
-class Recuadro extends StatelessWidget {
-  final String titulo;
-  final String monto;
-  final String porcentaje;
 
-  const Recuadro({
-    //super.key,
-    required this.titulo,
-    required this.monto,
-    required this.porcentaje,
-  });
-=======
 class _UserInfoSection extends StatelessWidget {
   final String userName;
   const _UserInfoSection({Key? key, required this.userName}) : super(key: key);
@@ -326,7 +247,6 @@ class _ReportCard extends StatelessWidget {
     required this.percentage,
     required this.imagePath,
   }) : super(key: key);
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
   // Helper interno para formatear el monto
   String _formatAmount(double value, CurrencyProvider provider) {
@@ -352,29 +272,6 @@ class _ReportCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-<<<<<<< HEAD
-          Text(
-            titulo,
-            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w800),
-          ),
-          SizedBox(height: 8.0),
-          Text(
-            monto,
-            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8.0),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: Text(
-              porcentaje,
-              style: TextStyle(fontSize: 12.0, color: Colors.white),
-            ),
-          ),
-=======
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,7 +338,6 @@ class _BottomNavigationBar extends StatelessWidget {
               // O simplemente no hacer nada si ya estás aquí.
             },
           ),
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
         ],
       ),
     );

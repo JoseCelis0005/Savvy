@@ -9,11 +9,8 @@ import '../screens/configuracion/config_tema_screen.dart';
 import '../screens/configuracion/config_idioma_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/test_screen.dart';
-<<<<<<< HEAD
-=======
 import '../screens/configuracion/config_moneda_screen.dart';
 import '../screens/configuracion/config_sesion_screen.dart';
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
 class AppRoutes {
   static const initialRoute = '/';

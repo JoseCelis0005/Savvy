@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-<<<<<<< HEAD
-import 'package:firebase_core/firebase_core.dart'; // Importa la librería de Firebase
-import 'routes/app_routes.dart'; // Importa las rutas de la aplicación
-import 'package:url_launcher/url_launcher.dart'; // Importa la librería Flutter
-import 'package:circular_menu/circular_menu.dart'; //libreria para el menu circular
-=======
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:savvy/routes/app_routes.dart';
->>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 import 'package:savvy/screens/configuracion/theme_model.dart';
 import 'package:savvy/screens/configuracion/locale_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
