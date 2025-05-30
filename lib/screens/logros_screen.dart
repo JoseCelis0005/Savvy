@@ -3,7 +3,14 @@ import 'package:circular_menu/circular_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+<<<<<<< HEAD
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importante!
+=======
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:savvy/main.dart'; // Asegúrate de que esta importación sea correcta para notificationService
+import 'package:provider/provider.dart'; // Importa Provider
+import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importa tu CurrencyProvider
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
 //pantalla logros
 class LogrosScreen extends StatelessWidget {
@@ -11,12 +18,22 @@ class LogrosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
   	final l10n = AppLocalizations.of(context)!; // Obtén la instancia
+=======
+    final l10n = AppLocalizations.of(context)!;
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Center(child: Text('Usuario no autenticado'));
     }
     final uid = user.uid;
+<<<<<<< HEAD
+=======
+
+    // Accede al CurrencyProvider aquí
+    final currencyProvider = Provider.of<CurrencyProvider>(context);
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
     return Scaffold(
       appBar: AppBar(
@@ -26,7 +43,7 @@ class LogrosScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.achievements, // Usa la clave traducida
+              l10n.achievements,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -57,7 +74,7 @@ class LogrosScreen extends StatelessWidget {
               ),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: l10n.search, // Usa la clave traducida
+                  hintText: l10n.search,
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
@@ -74,10 +91,18 @@ class LogrosScreen extends StatelessWidget {
               child: ListView(
                 children: [
                   StreamBuilder(
+<<<<<<< HEAD
                      stream: FirebaseFirestore.instance
                       .collection('achievements')
                       .where('userId', isEqualTo: uid)
                       .snapshots(),
+=======
+                    stream:
+                        FirebaseFirestore.instance
+                            .collection('achievements')
+                            .where('userId', isEqualTo: uid)
+                            .snapshots(),
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
@@ -86,6 +111,7 @@ class LogrosScreen extends StatelessWidget {
                         return Center(child: Text('No achievements found.'));
                       }
                       return Column(
+<<<<<<< HEAD
                         children: snapshot.data!.docs.map((doc) {
                           final photoUrl = doc['photoUrl'] ?? 'assets/images/logro.png';  // URL de la imagen
                           return Column(
@@ -102,17 +128,56 @@ class LogrosScreen extends StatelessWidget {
                             ],
                           );
                         }).toList(),
+=======
+                        children:
+                            snapshot.data!.docs.map((doc) {
+                              final photoUrl =
+                                  doc['photoUrl'] ?? 'assets/images/logro.png';
+                              // Asegúrate de que el monto se pase como double para la conversión
+                              final double montoObjetivoEnBase =
+                                  double.tryParse(
+                                    doc['monto']?.toString() ?? '0',
+                                  ) ??
+                                  0;
+
+                              return Column(
+                                children: [
+                                  LogroItem(
+                                    userId: uid,
+                                    id: doc.id,
+                                    imagenUrl: photoUrl,
+                                    titulo: _capitalizeFirstLetter(
+                                      doc['name_logro'] ?? 'Sin Título',
+                                    ),
+                                    // Pasa el monto base y el currencyProvider al LogroItem
+                                    montoBase: montoObjetivoEnBase,
+                                    currencyProvider:
+                                        currencyProvider, // Pasa el provider
+                                  ),
+                                  SizedBox(height: 12.0),
+                                ],
+                              );
+                            }).toList(),
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                       );
                     },
                   ),
                   SizedBox(height: 12.0),
+                  // Para el LogroItem "Nuevo Logro", no necesitas pasar el monto base ni el provider.
                   LogroItem(
                     userId: uid,
                     id: '0',
                     imagenUrl: 'assets/images/logro.png',
+<<<<<<< HEAD
                     titulo: l10n.newAchievement, // Usa la clave traducida
                     monto: '',
+=======
+                    titulo: l10n.newAchievement,
+                    montoBase: 0.0, // Monto base 0 para el nuevo logro
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                     isNew: true,
+                    currencyProvider:
+                        currencyProvider, // Pasa el provider también aquí
                   ),
                 ],
               ),
@@ -149,8 +214,6 @@ class LogrosScreen extends StatelessWidget {
           ],
         ),
       ),
-
-      //Circular menú
       floatingActionButton: CircularMenu(
         alignment: Alignment.bottomRight,
         toggleButtonColor: Colors.teal,
@@ -188,8 +251,10 @@ class LogroItem extends StatefulWidget {
   final String userId;
   final String imagenUrl;
   final String titulo;
-  final String monto;
+  final double
+  montoBase; // Ahora es un double para el monto en la moneda base (COP)
   final bool isNew;
+  final CurrencyProvider currencyProvider; // Recibe el CurrencyProvider
 
   const LogroItem({
     Key? key,
@@ -197,8 +262,9 @@ class LogroItem extends StatefulWidget {
     required this.userId,
     required this.imagenUrl,
     required this.titulo,
-    required this.monto,
+    required this.montoBase, // Cambiado a montoBase
     this.isNew = false,
+    required this.currencyProvider, // Hace que sea requerido
   }) : super(key: key);
 
   @override
@@ -207,6 +273,10 @@ class LogroItem extends StatefulWidget {
 
 class _LogroItemState extends State<LogroItem> {
   double progreso = 0.0;
+<<<<<<< HEAD
+=======
+  // String _formattedMonto = ''; // Para almacenar el monto formateado
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
   @override
   void initState() {
@@ -214,6 +284,7 @@ class _LogroItemState extends State<LogroItem> {
     _calcularProgreso();
   }
 
+<<<<<<< HEAD
   Future<void> _calcularProgreso() async {
    final snapshot = await FirebaseFirestore.instance
     .collection('agregados')
@@ -249,6 +320,66 @@ class _LogroItemState extends State<LogroItem> {
     }
   }
 
+=======
+  // Se recalcula el progreso cada vez que el widget se actualiza (e.g. al cambiar la moneda)
+  @override
+  void didUpdateWidget(covariant LogroItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.id != oldWidget.id ||
+        widget.currencyProvider.selectedDisplayCurrency !=
+            oldWidget.currencyProvider.selectedDisplayCurrency) {
+      _calcularProgreso();
+    }
+  }
+
+  Future<void> _calcularProgreso() async {
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('agregados')
+            .where('achievementId', isEqualTo: widget.id)
+            .where(
+              'userId',
+              isEqualTo: widget.userId,
+            ) // Asegúrate de filtrar por userId
+            .get();
+
+    double totalAgregadoEnBase = 0; // Acumular en la moneda base (COP)
+    for (var doc in snapshot.docs) {
+      // Asume que valor_agregado en Firestore SIEMPRE está en la moneda base (COP)
+      totalAgregadoEnBase +=
+          double.tryParse(doc['valor_agregado']?.toString() ?? '0') ?? 0;
+    }
+
+    if (widget.montoBase > 0) {
+      setState(() {
+        progreso = totalAgregadoEnBase / widget.montoBase;
+        if (progreso > 1.0) progreso = 1.0;
+      });
+    } else {
+      setState(() {
+        progreso = 0.0;
+      });
+    }
+  }
+
+  // Helper para formatear la moneda, ahora utiliza el currencyProvider
+  String _formatCurrency(double value, CurrencyProvider currencyProvider) {
+    final convertedValue = currencyProvider.convertAmount(value);
+    final currencySymbol =
+        currencyProvider.getCurrencySymbol(); // Obtiene "COP" o "US"
+
+    final formatter = NumberFormat.currency(
+      locale: 'es_CO', // o 'en_US' si prefieres para dólares
+      symbol: currencySymbol, // Usa el símbolo personalizado
+      decimalDigits:
+          currencyProvider.selectedDisplayCurrency == 'USD'
+              ? 2
+              : 0, // 2 decimales para USD, 0 para COP
+    );
+    return formatter.format(convertedValue);
+  }
+
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
   @override
   Widget build(BuildContext context) {
     Widget imageWidget;
@@ -260,6 +391,10 @@ class _LogroItemState extends State<LogroItem> {
         height: 80.0,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
+<<<<<<< HEAD
+=======
+          // Si la URL de red falla, intenta cargar como asset local
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
           return Image.asset(
             widget.imagenUrl,
             width: 80.0,
@@ -269,8 +404,14 @@ class _LogroItemState extends State<LogroItem> {
         },
       );
     } else {
+<<<<<<< HEAD
       imageWidget = Image.asset(
         widget.imagenUrl,
+=======
+      // Si imagenUrl está vacío, usa el asset por defecto
+      imageWidget = Image.asset(
+        'assets/images/logro.png', // Asegúrate de que esta ruta sea correcta
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
         width: 80.0,
         height: 80.0,
         fit: BoxFit.cover,
@@ -278,11 +419,20 @@ class _LogroItemState extends State<LogroItem> {
     }
 
     return GestureDetector(
+<<<<<<< HEAD
       onTap: widget.isNew
           ? () {
               Navigator.pushNamed(context, '/crear-logro');
             }
           : null,
+=======
+      onTap:
+          widget.isNew
+              ? () {
+                Navigator.pushNamed(context, '/crear-logro');
+              }
+              : null,
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -315,11 +465,20 @@ class _LogroItemState extends State<LogroItem> {
                     ),
                     if (!widget.isNew) ...[
                       Text(
+<<<<<<< HEAD
                         widget.monto,
                         style: TextStyle(
                           fontSize: 16.0,
                           color: Colors.green,
                         ),
+=======
+                        // Usa el helper para formatear el montoBase
+                        _formatCurrency(
+                          widget.montoBase,
+                          widget.currencyProvider,
+                        ),
+                        style: TextStyle(fontSize: 16.0, color: Colors.green),
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                       ),
                       SizedBox(height: 6.0),
                       LinearProgressIndicator(
@@ -327,11 +486,24 @@ class _LogroItemState extends State<LogroItem> {
                         backgroundColor: Colors.grey[300],
                         color: Colors.green,
                         minHeight: 8.0,
+<<<<<<< HEAD
+=======
+                        borderRadius: BorderRadius.circular(
+                          4.0,
+                        ), // Añadido para consistencia
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                       ),
                       SizedBox(height: 4.0),
                       Text(
                         "${(progreso * 100).toStringAsFixed(0)}% completado",
+<<<<<<< HEAD
                         style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+=======
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.grey[600],
+                        ),
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                       ),
                     ],
                   ],
@@ -347,7 +519,17 @@ class _LogroItemState extends State<LogroItem> {
                       icon: Icon(Icons.add),
                       color: Colors.teal,
                       onPressed: () {
+<<<<<<< HEAD
                         _mostrarDialogoAgregarMonto(context, widget.id, widget.monto, widget.userId);
+=======
+                        _mostrarDialogoAgregarMonto(
+                          context,
+                          widget.id,
+                          widget.montoBase, // Pasa el monto base
+                          widget.userId,
+                          widget.currencyProvider, // Pasa el currencyProvider
+                        );
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                       },
                     ),
                     IconButton(
@@ -372,6 +554,8 @@ String _capitalizeFirstLetter(String input) {
   return input[0].toUpperCase() + input.substring(1);
 }
 
+// **ELIMINAR ESTA FUNCIÓN:** Ya no se usará esta función global, en su lugar se usará el _formatCurrency interno de LogroItem.
+/*
 String _formatCurrency(String amount) {
   try {
     final number = double.parse(amount);
@@ -381,6 +565,7 @@ String _formatCurrency(String amount) {
     return '\$0';
   }
 }
+<<<<<<< HEAD
 
 void _mostrarDialogoAgregarMonto(
     BuildContext context, String docId, dynamic montoActual, String userId) {
@@ -425,12 +610,109 @@ void _mostrarDialogoAgregarMonto(
         ),
       ],
     ),
+=======
+*/
+
+void _mostrarDialogoAgregarMonto(
+  BuildContext context,
+  String docId,
+  double montoObjetivoBase, // Ahora es un double
+  String userId,
+  CurrencyProvider currencyProvider, // Se pasa el currencyProvider
+) {
+  final controller = TextEditingController();
+  // Obtiene el símbolo de la moneda actual para el hintText
+  final currentCurrencySymbol = currencyProvider.getCurrencySymbol();
+
+  showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: Text('Agregar monto'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            // HintText con el símbolo de la moneda actual
+            decoration: InputDecoration(
+              labelText: 'Monto adicional ($currentCurrencySymbol)',
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: Text('Agregar'),
+              onPressed: () async {
+                // El monto ingresado por el usuario debe ser tratado como si estuviera en la moneda de visualización actual
+                // y luego convertido a la moneda base (COP) para almacenar en Firestore.
+                double montoIngresado = double.tryParse(controller.text) ?? 0;
+
+                // Convierte el monto ingresado de la moneda de visualización a la moneda base (COP)
+                // Usamos la inversa de la tasa de COP_to_USD si la moneda de visualización es USD.
+                double montoParaGuardarEnBase;
+                if (currencyProvider.selectedDisplayCurrency == 'USD') {
+                  // Asume que la tasa USD_to_COP está disponible en _exchangeRates
+                  montoParaGuardarEnBase =
+                      montoIngresado * currencyProvider.usdToCopRate;
+                } else {
+                  montoParaGuardarEnBase = montoIngresado; // Ya está en COP
+                }
+
+                final ahora = DateTime.now();
+                final fecha =
+                    "${ahora.day.toString().padLeft(2, '0')}/${ahora.month.toString().padLeft(2, '0')}/${ahora.year}";
+                final hora =
+                    "${ahora.hour.toString().padLeft(2, '0')}:${ahora.minute.toString().padLeft(2, '0')}:${ahora.second.toString().padLeft(2, '0')}";
+
+                // Guardar en subcolección "agregados"
+                await FirebaseFirestore.instance.collection('agregados').add({
+                  'valor_agregado': montoParaGuardarEnBase.toStringAsFixed(
+                    0,
+                  ), // Guardar como String o double sin decimales si es entero
+                  'fecha': fecha,
+                  'hora': hora,
+                  'userId': userId,
+                  'achievementId': docId,
+                  'created_at': ahora,
+                });
+
+                DocumentSnapshot? achievementDoc;
+                try {
+                  achievementDoc =
+                      await FirebaseFirestore.instance
+                          .collection('achievements')
+                          .doc(docId)
+                          .get();
+                } catch (e) {
+                  debugPrint(
+                    'Error al obtener el logro para la notificación: $e',
+                  );
+                }
+
+                final nombreLogro = achievementDoc?['name_logro'] ?? 'tu meta';
+
+                notificationService.showInstantNotification(
+                  id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                  title: '¡Excelente progreso! 🎉',
+                  body: '¡Sigue ahorrando para tu meta $nombreLogro!',
+                  payload: 'monto_agregado_incentivo',
+                );
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
   );
 }
 
 void _confirmarEliminarLogro(BuildContext context, String docId) {
   showDialog(
     context: context,
+<<<<<<< HEAD
     builder: (context) => AlertDialog(
       title: Text('¿Eliminar logro?'),
       content: Text('¿Estás seguro de que deseas eliminar este logro? Esta acción no se puede deshacer.'),
@@ -453,3 +735,30 @@ void _confirmarEliminarLogro(BuildContext context, String docId) {
 
 
 
+=======
+    builder:
+        (context) => AlertDialog(
+          title: Text('¿Eliminar logro?'),
+          content: Text(
+            '¿Estás seguro de que deseas eliminar este logro? Esta acción no se puede deshacer.',
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('achievements')
+                    .doc(docId)
+                    .delete();
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+  );
+}
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574

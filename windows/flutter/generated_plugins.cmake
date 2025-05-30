@@ -8,6 +8,10 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_auth
   firebase_core
   firebase_storage
+<<<<<<< HEAD
+=======
+  permission_handler_windows
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
   url_launcher_windows
 )
 

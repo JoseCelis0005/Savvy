@@ -6,7 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:circular_menu/circular_menu.dart';
+<<<<<<< HEAD
+=======
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Para notificaciones
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:savvy/main.dart'; // Aquí asumo que tienes flutterLocalNotificationsPlugin definido
 
 class crear_logro extends StatefulWidget {
   @override
@@ -45,7 +50,13 @@ class _CrearLogroState extends State<crear_logro> {
 
   Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
+<<<<<<< HEAD
     final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+=======
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
     if (pickedFile != null) {
       setState(() {
         _imageFile = pickedFile;
@@ -55,19 +66,57 @@ class _CrearLogroState extends State<crear_logro> {
 
   Future<String?> uploadImage(String userId) async {
     if (_imageFile == null) return null;
+<<<<<<< HEAD
     final storageRef = FirebaseStorage.instance
         .ref()
         .child('user_images/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg');
+=======
+    final storageRef = FirebaseStorage.instance.ref().child(
+      'user_images/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg',
+    );
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
     final uploadTask = storageRef.putFile(File(_imageFile!.path));
     final snapshot = await uploadTask;
     return await snapshot.ref.getDownloadURL();
   }
 
+<<<<<<< HEAD
   @override
   Widget build(BuildContext context) {
   	final l10n = AppLocalizations.of(context)!; // Obtén la instancia
     final NumberFormat currencyFormatter = NumberFormat.currency(locale: 'es_CO', symbol: '\$');
+=======
+  Future<void> mostrarNotificacion(String titulo, String cuerpo) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'canal_logros', // ID del canal
+          'Logros', // Nombre visible del canal
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
+
+    const NotificationDetails notificacion = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0, // Puedes usar un ID fijo o dinámico aquí
+      titulo,
+      cuerpo,
+      notificacion,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final NumberFormat currencyFormatter = NumberFormat.currency(
+      locale: 'es_CO',
+      symbol: '\$',
+    );
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
 
     return Scaffold(
       appBar: AppBar(
@@ -77,7 +126,7 @@ class _CrearLogroState extends State<crear_logro> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.createAchievement, // Usa la clave traducida
+              l10n.createAchievement,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -108,8 +157,7 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: nombreController,
                       decoration: InputDecoration(
-                        labelText:
-                            l10n.achievementName, // Usa la clave traducida
+                        labelText: l10n.achievementName,
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -120,7 +168,7 @@ class _CrearLogroState extends State<crear_logro> {
                         child: TextFormField(
                           controller: fechaInicioController,
                           decoration: InputDecoration(
-                            labelText: l10n.startDate, // Usa la clave traducida
+                            labelText: l10n.startDate,
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -133,7 +181,7 @@ class _CrearLogroState extends State<crear_logro> {
                         child: TextFormField(
                           controller: fechaFinController,
                           decoration: InputDecoration(
-                            labelText: l10n.endDate, // Usa la clave traducida
+                            labelText: l10n.endDate,
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -143,9 +191,13 @@ class _CrearLogroState extends State<crear_logro> {
                     TextFormField(
                       controller: montoController,
                       decoration: InputDecoration(
-                        labelText: l10n.amount, // Usa la clave traducida
+                        labelText: l10n.amount,
                         border: OutlineInputBorder(),
                       ),
+<<<<<<< HEAD
+=======
+                      keyboardType: TextInputType.number,
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
                     ),
                     SizedBox(height: 32),
                     Center(
@@ -154,6 +206,7 @@ class _CrearLogroState extends State<crear_logro> {
                           final user = FirebaseAuth.instance.currentUser;
                           if (user == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
+<<<<<<< HEAD
                               SnackBar(content: Text('Debes iniciar sesión primero')),
                             );
                             return;
@@ -182,6 +235,57 @@ class _CrearLogroState extends State<crear_logro> {
                             'photoUrl': imageUrl,
                             'created_at': Timestamp.now(),
                           });
+=======
+                              SnackBar(
+                                content: Text('Debes iniciar sesión primero'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final nombre = nombreController.text.trim();
+                          final fechaInicio = fechaInicioController.text.trim();
+                          final fechaFin = fechaFinController.text.trim();
+                          final monto =
+                              montoController.text
+                                  .replaceAll(RegExp(r'[^\d]'), '')
+                                  .trim();
+
+                          if ([
+                            nombre,
+                            fechaInicio,
+                            fechaFin,
+                            monto,
+                          ].any((v) => v.isEmpty)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Por favor completa todos los campos',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          String? imageUrl = await uploadImage(user.uid);
+
+                          await FirebaseFirestore.instance
+                              .collection('achievements')
+                              .add({
+                                'userId': user.uid,
+                                'name_logro': nombre,
+                                'fec_inicio': fechaInicio,
+                                'fec_fin': fechaFin,
+                                'monto': monto,
+                                'photoUrl': imageUrl,
+                                'created_at': Timestamp.now(),
+                              });
+>>>>>>> 41601a3cd40a2601b0ce19e158a70af05f008574
+
+                          await mostrarNotificacion(
+                            '¡Logro Creado!',
+                            'Tu logro "$nombre" ha sido guardado. ¡Sigue adelante!',
+                          );
 
                           Navigator.pop(context);
                         },
@@ -196,7 +300,7 @@ class _CrearLogroState extends State<crear_logro> {
                             vertical: 15,
                           ),
                         ),
-                        child: Text(l10n.save), // Usa la clave traducida
+                        child: Text(l10n.save),
                       ),
                     ),
                   ],

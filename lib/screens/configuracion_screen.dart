@@ -60,13 +60,17 @@ class _ConfiguracionScreen extends State<ConfiguracionScreen> {
             ListTile(
               leading: Icon(Icons.attach_money, color: Colors.teal),
               title: Text(l10n.currencySettings), // <-- USA LA CLAVE
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, '/config-moneda');
+              },
             ),
             Divider(),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.teal),
               title: Text(l10n.logout), // <-- USA LA CLAVE
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, '/config-sesion');
+              },
             ),
           ],
         ),
