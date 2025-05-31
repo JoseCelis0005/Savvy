@@ -17,6 +17,10 @@ class crear_logro extends StatefulWidget {
 }
 
 class _CrearLogroState extends State<crear_logro> {
+  String? logroId; // Para saber si estamos editando
+  bool datosCargados = false;
+  String? existingImageUrl;
+  bool _isSaving = false;
   final TextEditingController nombreController = TextEditingController();
   final TextEditingController fechaInicioController = TextEditingController();
   final TextEditingController fechaFinController = TextEditingController();
@@ -91,8 +95,104 @@ class _CrearLogroState extends State<crear_logro> {
     );
   }
 
+  Future<void> _cargarDatosLogro(String id) async {
+    final doc = await FirebaseFirestore.instance.collection('achievements').doc(id).get();
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        nombreController.text = data['name_logro'] ?? '';
+        fechaInicioController.text = data['fec_inicio'] ?? '';
+        fechaFinController.text = data['fec_fin'] ?? '';
+        montoController.text = data['monto'] ?? '';
+        existingImageUrl = data['photoUrl'];
+        // Puedes guardar la URL de la imagen si quieres mostrarla
+      });
+    }
+  }
+
+  Future<void> _guardarLogro() async {
+    if (_isSaving) return;
+
+    setState(() => _isSaving = true);
+
+    final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Debes iniciar sesión primero')),
+        );
+        setState(() => _isSaving = false);
+        return;
+      }
+
+      final nombre = nombreController.text.trim();
+      final fechaInicio = fechaInicioController.text.trim();
+      final fechaFin = fechaFinController.text.trim();
+      final monto = montoController.text.replaceAll(RegExp(r'[^\d]'), '').trim();
+
+      if ([nombre, fechaInicio, fechaFin, monto].any((v) => v.isEmpty)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Por favor completa todos los campos')),
+        );
+        setState(() => _isSaving = false);
+        return;
+      }
+
+      try {
+        String? imageUrl = await uploadImage(user.uid);
+        imageUrl ??= existingImageUrl; // usa la existente si no hay nueva
+
+        if (logroId != null) {
+          await FirebaseFirestore.instance.collection('achievements').doc(logroId).update({
+            'name_logro': nombre,
+            'fec_inicio': fechaInicio,
+            'fec_fin': fechaFin,
+            'monto': monto,
+            'photoUrl': imageUrl ?? FieldValue.delete(),
+            'updated_at': Timestamp.now(),
+          });
+
+          await mostrarNotificacion(
+            '¡Logro Actualizado!',
+            'Tu logro "$nombre" ha sido modificado.',
+          );
+
+        } else {
+          await FirebaseFirestore.instance.collection('achievements').add({
+            'userId': user.uid,
+            'name_logro': nombre,
+            'fec_inicio': fechaInicio,
+            'fec_fin': fechaFin,
+            'monto': monto,
+            'photoUrl': imageUrl,
+            'created_at': Timestamp.now(),
+          });
+
+          await mostrarNotificacion(
+            '¡Logro Creado!',
+            'Tu logro "$nombre" ha sido guardado. ¡Sigue adelante!',
+          );
+        }
+
+        Navigator.pop(context); // Regresa a la pantalla anterior
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al guardar: $e')),
+        );
+      } finally {
+        setState(() => _isSaving = false);
+      }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    if (!datosCargados && args != null && args['logroId'] != null) {
+      logroId = args['logroId'];
+      _cargarDatosLogro(logroId!);
+      datosCargados = true;
+    }
+
     final l10n = AppLocalizations.of(context)!;
     final NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'es_CO',
@@ -107,7 +207,8 @@ class _CrearLogroState extends State<crear_logro> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.createAchievement,
+              logroId != null ? l10n.updateAchievement : l10n.createAchievement,
+              //l10n.createAchievement,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -127,8 +228,10 @@ class _CrearLogroState extends State<crear_logro> {
                 child: Column(
                   children: [
                     _imageFile == null
-                        ? Text('No has seleccionado una imagen')
-                        : Image.file(File(_imageFile!.path), height: 150),
+                      ? (existingImageUrl != null
+                          ? Image.network(existingImageUrl!, height: 150)
+                          : Text('No has seleccionado una imagen'))
+                      : Image.file(File(_imageFile!.path), height: 150),
                     SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: pickImage,
@@ -181,60 +284,8 @@ class _CrearLogroState extends State<crear_logro> {
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Debes iniciar sesión primero'),
-                              ),
-                            );
-                            return;
-                          }
-
-                          final nombre = nombreController.text.trim();
-                          final fechaInicio = fechaInicioController.text.trim();
-                          final fechaFin = fechaFinController.text.trim();
-                          final monto =
-                              montoController.text
-                                  .replaceAll(RegExp(r'[^\d]'), '')
-                                  .trim();
-
-                          if ([
-                            nombre,
-                            fechaInicio,
-                            fechaFin,
-                            monto,
-                          ].any((v) => v.isEmpty)) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Por favor completa todos los campos',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          String? imageUrl = await uploadImage(user.uid);
-
-                          await FirebaseFirestore.instance
-                              .collection('achievements')
-                              .add({
-                                'userId': user.uid,
-                                'name_logro': nombre,
-                                'fec_inicio': fechaInicio,
-                                'fec_fin': fechaFin,
-                                'monto': monto,
-                                'photoUrl': imageUrl,
-                                'created_at': Timestamp.now(),
-                              });
-
-                          await mostrarNotificacion(
-                            '¡Logro Creado!',
-                            'Tu logro "$nombre" ha sido guardado. ¡Sigue adelante!',
-                          );
-
-                          Navigator.pop(context);
+                          if (_isSaving) return; // Evita múltiples clics
+                          await _guardarLogro();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color.fromRGBO(6, 145, 154, 1),
@@ -250,6 +301,32 @@ class _CrearLogroState extends State<crear_logro> {
                         child: Text(l10n.save),
                       ),
                     ),
+                    if (logroId != null) 
+                      SizedBox(height: 16),
+                      if (logroId != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _mostrarModalAbonos(context , logroId!);
+                            },
+                            icon: Icon(Icons.visibility),
+                            label: Text(l10n.viewPays),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color.fromRGBO(6, 145, 154, 1),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 40,
+                                vertical: 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                    
+                    
                   ],
                 ),
               ),
@@ -257,59 +334,151 @@ class _CrearLogroState extends State<crear_logro> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+      // Usamos Stack para posicionar múltiples widgets flotantes
+      floatingActionButton: Stack(
+        children: [
+          // Botón de la casita flotante a la izquierda
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 35.0,
+                bottom: 20.0,
+              ), // Ajusta el padding según necesites
+              child: FloatingActionButton(
+                heroTag: 'homeBtn', // Es importante para múltiples FABs
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/home',
+                    (route) => false,
+                  );
+                },
+                backgroundColor: Colors.teal,
+                shape: const CircleBorder(),
+                child: const Icon(
+                  Icons.home,
+                  color: Colors.white,
+                ), // Icono de la casita
+              ),
             ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.attach_money),
-              onPressed: () {
-                Navigator.pushNamed(context, '/informes');
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: CircularMenu(
-        alignment: Alignment.bottomRight,
-        toggleButtonColor: Colors.teal,
-        toggleButtonIconColor: Colors.white,
-        items: [
-          CircularMenuItem(
-            icon: Icons.settings,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/configuracion');
-            },
           ),
-          CircularMenuItem(
-            icon: Icons.bar_chart,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/informes');
-            },
-          ),
-          CircularMenuItem(
-            icon: Icons.emoji_events,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/logros');
-            },
+          // Menú Circular (se mantiene igual, a la derecha)
+          CircularMenu(
+            alignment: Alignment.bottomRight,
+            toggleButtonColor: Colors.teal,
+            toggleButtonIconColor: Colors.white,
+            items: [
+              CircularMenuItem(
+                icon: Icons.settings,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/configuracion');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.bar_chart,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/informes');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.emoji_events,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/logros');
+                },
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+}
+
+void _mostrarModalAbonos(BuildContext context, String logroId) {
+  showModalBottomSheet(
+    context: context,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('agregados')
+            .where('achievementId', isEqualTo: logroId)
+            .get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Center(child: Text('No hay abonos registrados para este logro')),
+            );
+          }
+
+          final abonos = snapshot.data!.docs;
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView.builder(
+              itemCount: abonos.length,
+              itemBuilder: (context, index) {
+                final abono = abonos[index].data() as Map<String, dynamic>;
+                final monto = abono['valor_agregado'] ?? '';
+                final fecha = abono['fecha'] ?? '';
+                final docId = abonos[index].id;
+
+                return ListTile(
+                  leading: Icon(Icons.attach_money, color: Colors.green),
+                  title: Text('Monto: \$${monto.toString()}'),
+                  subtitle: Text('Fecha: $fecha'),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('Eliminar este abono'),
+                          content: Text('¿Estás seguro de que deseas eliminar este abono?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text('Cancelar'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        await FirebaseFirestore.instance
+                            .collection('agregados')
+                            .doc(docId)
+                            .delete();
+
+                        Navigator.of(context).pop(); // Cierra el modal
+                        _mostrarModalAbonos(context, logroId); // Lo vuelve a abrir actualizado
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      );
+    },
+  );
 }

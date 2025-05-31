@@ -21,6 +21,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get save => 'Guardar';
 
   @override
+  String get viewPays => 'Ver Abonos';
+
+  @override
   String get login => 'Iniciar Sesión';
 
   @override
@@ -123,6 +126,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get createAchievement => 'Crear Logro';
+
+  @override
+  String get updateAchievement => 'Actualizar Logro';
 
   @override
   String get reports => 'Informes';

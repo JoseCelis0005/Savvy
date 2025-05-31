@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get viewPays => 'View payments';
+
+  @override
   String get login => 'Log In';
 
   @override
@@ -104,10 +107,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currencySettings => 'Currency Settings';
 
   @override
-  String get achievements => 'Achievements';
+  String get achievements => 'Archievements';
 
   @override
-  String get newAchievement => 'New Achievement';
+  String get newAchievement => 'New Archievement';
 
   @override
   String get achievementName => 'Name';
@@ -122,7 +125,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get amount => 'Amount';
 
   @override
-  String get createAchievement => 'Create Achievement';
+  String get createAchievement => 'Create Archievement';
+
+  @override
+  String get updateAchievement => 'Update Archievement';
 
   @override
   String get reports => 'Reports';

@@ -122,6 +122,12 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
+  /// No description provided for @viewPays.
+  ///
+  /// In en, this message translates to:
+  /// **'View payments'**
+  String get viewPays;
+
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
@@ -287,13 +293,13 @@ abstract class AppLocalizations {
   /// No description provided for @achievements.
   ///
   /// In en, this message translates to:
-  /// **'Achievements'**
+  /// **'Archievements'**
   String get achievements;
 
   /// No description provided for @newAchievement.
   ///
   /// In en, this message translates to:
-  /// **'New Achievement'**
+  /// **'New Archievement'**
   String get newAchievement;
 
   /// No description provided for @achievementName.
@@ -323,8 +329,14 @@ abstract class AppLocalizations {
   /// No description provided for @createAchievement.
   ///
   /// In en, this message translates to:
-  /// **'Create Achievement'**
+  /// **'Create Archievement'**
   String get createAchievement;
+
+  /// No description provided for @updateAchievement.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Archievement'**
+  String get updateAchievement;
 
   /// No description provided for @reports.
   ///

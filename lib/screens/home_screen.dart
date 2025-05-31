@@ -287,7 +287,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
                 onPressed: () {
                   Navigator.pushNamedAndRemoveUntil(
                     context,
-                    '/home_screen',
+                    '/home',
                     (route) => false,
                   );
                 },

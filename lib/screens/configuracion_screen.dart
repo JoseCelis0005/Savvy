@@ -78,56 +78,63 @@ class _ConfiguracionScreen extends State<ConfiguracionScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+      // Usamos Stack para posicionar múltiples widgets flotantes
+      floatingActionButton: Stack(
+        children: [
+          // Botón de la casita flotante a la izquierda
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 35.0,
+                bottom: 20.0,
+              ), // Ajusta el padding según necesites
+              child: FloatingActionButton(
+                heroTag: 'homeBtn', // Es importante para múltiples FABs
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/home',
+                    (route) => false,
+                  );
+                },
+                backgroundColor: Colors.teal,
+                shape: const CircleBorder(),
+                child: const Icon(
+                  Icons.home,
+                  color: Colors.white,
+                ), // Icono de la casita
+              ),
             ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.attach_money),
-              onPressed: () {
-                Navigator.pushNamed(context, '/informes');
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: CircularMenu(
-        alignment: Alignment.bottomRight,
-        toggleButtonColor: Colors.teal,
-        toggleButtonIconColor: Colors.white,
-        items: [
-          CircularMenuItem(
-            icon: Icons.settings,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/configuracion');
-            },
           ),
-          CircularMenuItem(
-            icon: Icons.bar_chart,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/informes');
-            },
-          ),
-          CircularMenuItem(
-            icon: Icons.emoji_events,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/logros');
-            },
+          // Menú Circular (se mantiene igual, a la derecha)
+          CircularMenu(
+            alignment: Alignment.bottomRight,
+            toggleButtonColor: Colors.teal,
+            toggleButtonIconColor: Colors.white,
+            items: [
+              CircularMenuItem(
+                icon: Icons.settings,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/configuracion');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.bar_chart,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/informes');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.emoji_events,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/logros');
+                },
+              ),
+            ],
           ),
         ],
       ),

@@ -144,56 +144,63 @@ class LogrosScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+      // Usamos Stack para posicionar múltiples widgets flotantes
+      floatingActionButton: Stack(
+        children: [
+          // Botón de la casita flotante a la izquierda
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 35.0,
+                bottom: 20.0,
+              ), // Ajusta el padding según necesites
+              child: FloatingActionButton(
+                heroTag: 'homeBtn', // Es importante para múltiples FABs
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/home',
+                    (route) => false,
+                  );
+                },
+                backgroundColor: Colors.teal,
+                shape: const CircleBorder(),
+                child: const Icon(
+                  Icons.home,
+                  color: Colors.white,
+                ), // Icono de la casita
+              ),
             ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.attach_money),
-              onPressed: () {
-                Navigator.pushNamed(context, '/informes');
-              },
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: CircularMenu(
-        alignment: Alignment.bottomRight,
-        toggleButtonColor: Colors.teal,
-        toggleButtonIconColor: Colors.white,
-        items: [
-          CircularMenuItem(
-            icon: Icons.settings,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/configuracion');
-            },
           ),
-          CircularMenuItem(
-            icon: Icons.bar_chart,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/informes');
-            },
-          ),
-          CircularMenuItem(
-            icon: Icons.emoji_events,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/logros');
-            },
+          // Menú Circular (se mantiene igual, a la derecha)
+          CircularMenu(
+            alignment: Alignment.bottomRight,
+            toggleButtonColor: Colors.teal,
+            toggleButtonIconColor: Colors.white,
+            items: [
+              CircularMenuItem(
+                icon: Icons.settings,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/configuracion');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.bar_chart,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/informes');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.emoji_events,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/logros');
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -206,10 +213,9 @@ class LogroItem extends StatefulWidget {
   final String userId;
   final String imagenUrl;
   final String titulo;
-  final double
-  montoBase; // Ahora es un double para el monto en la moneda base (COP)
+  final double montoBase;
   final bool isNew;
-  final CurrencyProvider currencyProvider; // Recibe el CurrencyProvider
+  final CurrencyProvider currencyProvider;
 
   const LogroItem({
     Key? key,
@@ -217,18 +223,17 @@ class LogroItem extends StatefulWidget {
     required this.userId,
     required this.imagenUrl,
     required this.titulo,
-    required this.montoBase, // Cambiado a montoBase
+    required this.montoBase,
     this.isNew = false,
-    required this.currencyProvider, // Hace que sea requerido
+    required this.currencyProvider,
   }) : super(key: key);
 
   @override
-  _LogroItemState createState() => _LogroItemState();
+  State<LogroItem> createState() => _LogroItemState();
 }
 
 class _LogroItemState extends State<LogroItem> {
   double progreso = 0.0;
-  // String _formattedMonto = ''; // Para almacenar el monto formateado
 
   @override
   void initState() {
@@ -236,194 +241,149 @@ class _LogroItemState extends State<LogroItem> {
     _calcularProgreso();
   }
 
-  // Se recalcula el progreso cada vez que el widget se actualiza (e.g. al cambiar la moneda)
   @override
   void didUpdateWidget(covariant LogroItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.id != oldWidget.id ||
-        widget.currencyProvider.selectedDisplayCurrency !=
-            oldWidget.currencyProvider.selectedDisplayCurrency) {
+        widget.currencyProvider.selectedDisplayCurrency != oldWidget.currencyProvider.selectedDisplayCurrency) {
       _calcularProgreso();
     }
   }
 
   Future<void> _calcularProgreso() async {
-    final snapshot =
-        await FirebaseFirestore.instance
-            .collection('agregados')
-            .where('achievementId', isEqualTo: widget.id)
-            .where(
-              'userId',
-              isEqualTo: widget.userId,
-            ) // Asegúrate de filtrar por userId
-            .get();
+    final snapshot = await FirebaseFirestore.instance
+        .collection('agregados')
+        .where('achievementId', isEqualTo: widget.id)
+        .where('userId', isEqualTo: widget.userId)
+        .get();
 
-    double totalAgregadoEnBase = 0; // Acumular en la moneda base (COP)
+    double total = 0;
     for (var doc in snapshot.docs) {
-      // Asume que valor_agregado en Firestore SIEMPRE está en la moneda base (COP)
-      totalAgregadoEnBase +=
-          double.tryParse(doc['valor_agregado']?.toString() ?? '0') ?? 0;
+      total += double.tryParse(doc['valor_agregado'].toString()) ?? 0;
     }
 
-    if (widget.montoBase > 0) {
+    final nuevoProgreso = widget.montoBase > 0 ? (total / widget.montoBase).clamp(0.0, 1.0) : 0.0;
+
+    if (mounted) {
       setState(() {
-        progreso = totalAgregadoEnBase / widget.montoBase;
-        if (progreso > 1.0) progreso = 1.0;
-      });
-    } else {
-      setState(() {
-        progreso = 0.0;
+        progreso = nuevoProgreso;
       });
     }
   }
 
-  // Helper para formatear la moneda, ahora utiliza el currencyProvider
-  String _formatCurrency(double value, CurrencyProvider currencyProvider) {
-    final convertedValue = currencyProvider.convertAmount(value);
-    final currencySymbol =
-        currencyProvider.getCurrencySymbol(); // Obtiene "COP" o "US"
-
+  String _formatCurrency(double value) {
+    final converted = widget.currencyProvider.convertAmount(value);
+    final symbol = widget.currencyProvider.getCurrencySymbol();
     final formatter = NumberFormat.currency(
-      locale: 'es_CO', // o 'en_US' si prefieres para dólares
-      symbol: currencySymbol, // Usa el símbolo personalizado
-      decimalDigits:
-          currencyProvider.selectedDisplayCurrency == 'USD'
-              ? 2
-              : 0, // 2 decimales para USD, 0 para COP
+      locale: 'es_CO',
+      symbol: symbol,
+      decimalDigits: symbol == 'US' ? 2 : 0,
     );
-    return formatter.format(convertedValue);
+    return formatter.format(converted);
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget imageWidget;
-
-    if (widget.imagenUrl.isNotEmpty) {
-      imageWidget = Image.network(
-        widget.imagenUrl,
-        width: 80.0,
-        height: 80.0,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // Si la URL de red falla, intenta cargar como asset local
-          return Image.asset(
+    final image = widget.imagenUrl.isNotEmpty
+        ? Image.network(
             widget.imagenUrl,
-            width: 80.0,
-            height: 80.0,
+            width: 80,
+            height: 80,
             fit: BoxFit.cover,
-          );
-        },
-      );
-    } else {
-      // Si imagenUrl está vacío, usa el asset por defecto
-      imageWidget = Image.asset(
-        'assets/images/logro.png', // Asegúrate de que esta ruta sea correcta
-        width: 80.0,
-        height: 80.0,
-        fit: BoxFit.cover,
-      );
-    }
+            errorBuilder: (_, __, ___) => _defaultImage(),
+          )
+        : _defaultImage();
 
     return GestureDetector(
-      onTap:
-          widget.isNew
-              ? () {
-                Navigator.pushNamed(context, '/crear-logro');
-              }
-              : null,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: Offset(0, 2),
-            ),
+      onTap: widget.isNew ? () => Navigator.pushNamed(context, '/crear-logro') : null,
+      child: _buildCard(image),
+    );
+  }
+
+  Widget _defaultImage() {
+    return Image.asset(
+      'assets/images/logro.png',
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _buildCard(Widget image) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 3, offset: Offset(0, 2))],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            image,
+            SizedBox(width: 16),
+            Expanded(child: _buildInfo()),
+            widget.isNew ? Icon(Icons.add_circle, color: Colors.teal, size: 32) : _buildActions(),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            children: [
-              imageWidget,
-              SizedBox(width: 16.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.titulo,
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (!widget.isNew) ...[
-                      Text(
-                        // Usa el helper para formatear el montoBase
-                        _formatCurrency(
-                          widget.montoBase,
-                          widget.currencyProvider,
-                        ),
-                        style: TextStyle(fontSize: 16.0, color: Colors.green),
-                      ),
-                      SizedBox(height: 6.0),
-                      LinearProgressIndicator(
-                        value: progreso,
-                        backgroundColor: Colors.grey[300],
-                        color: Colors.green,
-                        minHeight: 8.0,
-                        borderRadius: BorderRadius.circular(
-                          4.0,
-                        ), // Añadido para consistencia
-                      ),
-                      SizedBox(height: 4.0),
-                      Text(
-                        "${(progreso * 100).toStringAsFixed(0)}% completado",
-                        style: TextStyle(
-                          fontSize: 12.0,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (widget.isNew)
-                Icon(Icons.add_circle, color: Colors.teal, size: 32.0)
-              else
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.add),
-                      color: Colors.teal,
-                      onPressed: () {
-                        _mostrarDialogoAgregarMonto(
-                          context,
-                          widget.id,
-                          widget.montoBase, // Pasa el monto base
-                          widget.userId,
-                          widget.currencyProvider, // Pasa el currencyProvider
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete),
-                      color: Colors.red,
-                      onPressed: () {
-                        _confirmarEliminarLogro(context, widget.id);
-                      },
-                    ),
-                  ],
-                ),
-            ],
+      ),
+    );
+  }
+
+  Widget _buildInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(widget.titulo, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        if (!widget.isNew) ...[
+          Text(_formatCurrency(widget.montoBase), style: TextStyle(fontSize: 16, color: Colors.green)),
+          SizedBox(height: 6),
+          LinearProgressIndicator(
+            value: progreso,
+            backgroundColor: Colors.grey[300],
+            color: Colors.green,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          SizedBox(height: 4),
+          Text('${(progreso * 100).toStringAsFixed(0)}% completado', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildActions() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(Icons.add),
+          color: Colors.teal,
+          onPressed: () => _mostrarDialogoAgregarMonto(
+            context,
+            widget.id,
+            widget.montoBase,
+            widget.userId,
+            widget.currencyProvider,
           ),
         ),
-      ),
+        IconButton(
+          icon: Icon(Icons.edit),
+          color: Colors.blue,
+          onPressed: () {
+            Navigator.pushNamed(
+              context,
+              '/crear-logro',
+              arguments: {'logroId': widget.id},
+            );
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.delete),
+          color: Colors.red,
+          onPressed: () => _confirmarEliminarLogro(context, widget.id),
+        ),
+      ],
     );
   }
 }
@@ -558,10 +518,23 @@ void _confirmarEliminarLogro(BuildContext context, String docId) {
             TextButton(
               child: Text('Eliminar', style: TextStyle(color: Colors.red)),
               onPressed: () async {
+                // Eliminar el achievement
                 await FirebaseFirestore.instance
                     .collection('achievements')
                     .doc(docId)
                     .delete();
+
+                // Eliminar los agregados que tengan el mismo achievementId
+                final agregadosSnapshot = await FirebaseFirestore.instance
+                    .collection('agregados')
+                    .where('achievementId', isEqualTo: docId)
+                    .get();
+
+                for (final doc in agregadosSnapshot.docs) {
+                  await doc.reference.delete();
+                }
+
+                // Volver atrás en la navegación
                 Navigator.pop(context);
               },
             ),
