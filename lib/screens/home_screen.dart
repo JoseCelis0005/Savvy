@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:savvy/main.dart'; // Asegúrate de que esta importación sea correcta si main.dart contiene algo relevante.
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Si usas localizaciones
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Si usas localizaciones
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 import 'package:provider/provider.dart';
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importa tu CurrencyProvider
 
@@ -14,7 +15,6 @@ class HelloWorldScreen extends StatefulWidget {
 }
 
 class _HelloWorldScreenState extends State<HelloWorldScreen> {
-  int _selectedIndex = 0;
   bool _mostroDialogo = false;
   String userEmail = '';
 
@@ -53,19 +53,6 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
         );
       },
     );
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    if (index == 2) {
-      // Asumiendo que quieres cerrar sesión al seleccionar el icono de "Salir"
-      // Si tienes una función de cierre de sesión, llámala aquí.
-      // Por ejemplo: FirebaseAuth.instance.signOut();
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-    }
   }
 
   // MODIFICADO: _formatCurrency ahora usa el CurrencyProvider para la conversión y el símbolo
@@ -109,6 +96,13 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        // ELIMINADO: La propiedad 'leading' del AppBar para el botón de inicio
+        // leading: IconButton(
+        //   icon: const Icon(Icons.home, color: Colors.white),
+        //   onPressed: () {
+        //     Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        //   },
+        // ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -275,40 +269,65 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.arrow_back), label: 'Atrás'),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Salir'),
-        ],
-      ),
-      floatingActionButton: CircularMenu(
-        alignment: Alignment.bottomRight,
-        toggleButtonColor: Colors.teal,
-        toggleButtonIconColor: Colors.white,
-        items: [
-          CircularMenuItem(
-            icon: Icons.settings,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/configuracion');
-            },
+      // ELIMINADO: bottomNavigationBar
+
+      // Usamos Stack para posicionar múltiples widgets flotantes
+      floatingActionButton: Stack(
+        children: [
+          // Botón de la casita flotante a la izquierda
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 35.0,
+                bottom: 20.0,
+              ), // Ajusta el padding según necesites
+              child: FloatingActionButton(
+                heroTag: 'homeBtn', // Es importante para múltiples FABs
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/home_screen',
+                    (route) => false,
+                  );
+                },
+                backgroundColor: Colors.teal,
+                shape: const CircleBorder(),
+                child: const Icon(
+                  Icons.home,
+                  color: Colors.white,
+                ), // Icono de la casita
+              ),
+            ),
           ),
-          CircularMenuItem(
-            icon: Icons.bar_chart,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/informes');
-            },
-          ),
-          CircularMenuItem(
-            icon: Icons.emoji_events,
-            color: Colors.teal,
-            onTap: () {
-              Navigator.pushNamed(context, '/logros');
-            },
+          // Menú Circular (se mantiene igual, a la derecha)
+          CircularMenu(
+            alignment: Alignment.bottomRight,
+            toggleButtonColor: Colors.teal,
+            toggleButtonIconColor: Colors.white,
+            items: [
+              CircularMenuItem(
+                icon: Icons.settings,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/configuracion');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.bar_chart,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/informes');
+                },
+              ),
+              CircularMenuItem(
+                icon: Icons.emoji_events,
+                color: Colors.teal,
+                onTap: () {
+                  Navigator.pushNamed(context, '/logros');
+                },
+              ),
+            ],
           ),
         ],
       ),

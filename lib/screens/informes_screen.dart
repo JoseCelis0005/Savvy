@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:circular_menu/circular_menu.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart'; // Importar Provider
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importar tu CurrencyProvider
 import 'package:intl/intl.dart'; // Importar para NumberFormat
 
-class InformesScreen extends StatefulWidget {
-  @override
-  _InformesScreen createState() => _InformesScreen();
-}
-
-//pantalla informes
-class _InformesScreen extends State<InformesScreen> {
-  //const InformesScreen({super.key});
+class InformesScreen extends StatelessWidget {
+  const InformesScreen({Key? key}) : super(key: key);
 
   // Helper para formatear la moneda (similar al de home_screen)
   String _formatCurrency(double value, CurrencyProvider currencyProvider) {
@@ -56,10 +52,13 @@ class _InformesScreen extends State<InformesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(6, 145, 154, 1),
+        title: Text(l10n.reports),
+        backgroundColor: Colors.teal,
         centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
           children: [
             _UserInfoSection(userName: userName),
             const SizedBox(height: 20),
@@ -101,31 +100,7 @@ class _InformesScreen extends State<InformesScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.attach_money),
-              onPressed: () {
-                Navigator.pushNamed(context, '/informes');
-              },
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: const _BottomNavigationBar(),
       floatingActionButton: CircularMenu(
         alignment: Alignment.bottomRight,
         toggleButtonColor: Colors.teal,
@@ -157,7 +132,6 @@ class _InformesScreen extends State<InformesScreen> {
     );
   }
 }
-
 
 class _UserInfoSection extends StatelessWidget {
   final String userName;
@@ -263,14 +237,13 @@ class _ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 600,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.teal.shade200,
-        borderRadius: BorderRadius.circular(10.0),
+        borderRadius: BorderRadius.circular(10),
       ),
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
             child: Column(

@@ -3,7 +3,8 @@ import 'package:circular_menu/circular_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 import 'package:savvy/main.dart'; // Asegúrate de que esta importación sea correcta para notificationService
 import 'package:provider/provider.dart'; // Importa Provider
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importa tu CurrencyProvider
@@ -150,23 +151,19 @@ class LogrosScreen extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.arrow_back),
               onPressed: () {
-                Navigator.pop(context); // Navegar hacia atrás
+                Navigator.pop(context);
               },
             ),
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () {
-                Navigator.pop(context); // Navegar hacia atrás
+                Navigator.pop(context);
               },
             ),
             IconButton(
               icon: Icon(Icons.attach_money),
               onPressed: () {
-                // Navegar a la pantalla de finanzas (ajusta la ruta según tu app)
-                Navigator.pushNamed(
-                  context,
-                  '/informes',
-                ); // Ejemplo: '/informes'
+                Navigator.pushNamed(context, '/informes');
               },
             ),
           ],

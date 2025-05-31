@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importar Firebase Auth
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Para las traducciones
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Para las traducciones
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 
 class ConfigSesionScreen extends StatelessWidget {
   const ConfigSesionScreen({Key? key}) : super(key: key);
@@ -67,7 +68,7 @@ class ConfigSesionScreen extends StatelessWidget {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    Colors.red.shade600, // Color rojo para acción de logout
+                    Colors.tealAccent, // Color rojo para acción de logout
                 padding: const EdgeInsets.symmetric(
                   horizontal: 40,
                   vertical: 15,

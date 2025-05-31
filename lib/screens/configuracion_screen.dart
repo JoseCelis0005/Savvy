@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:circular_menu/circular_menu.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // <-- IMPORTANTE
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // <-- IMPORTANTE
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 
 class ConfiguracionScreen extends StatefulWidget {
   @override
@@ -38,7 +39,9 @@ class _ConfiguracionScreen extends State<ConfiguracionScreen> {
             ListTile(
               leading: Icon(Icons.person, color: Colors.teal),
               title: Text(l10n.userSettings), // <-- USA LA CLAVE
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, '/config-usuario');
+              },
             ),
             Divider(),
             ListTile(

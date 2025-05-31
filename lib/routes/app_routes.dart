@@ -11,6 +11,7 @@ import '../screens/home_screen.dart';
 import '../screens/test_screen.dart';
 import '../screens/configuracion/config_moneda_screen.dart';
 import '../screens/configuracion/config_sesion_screen.dart';
+import '../screens/configuracion/config_usuario_screen.dart';
 
 class AppRoutes {
   static const initialRoute = '/';
@@ -28,5 +29,6 @@ class AppRoutes {
     '/config-idioma': (_) => ConfigIdiomaScreen(),
     '/config-moneda': (_) => const ConfigMonedaScreen(),
     '/config-sesion': (context) => const ConfigSesionScreen(),
+    '/config-usuario': (context) => const ConfigUsuarioScreen(),
   };
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'locale_provider.dart'; // Asegúrate de que la ruta sea correcta
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importante!
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Importante!
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 
 class ConfigIdiomaScreen extends StatefulWidget {
   @override

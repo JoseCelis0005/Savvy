@@ -7,7 +7,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'package:circular_menu/circular_menu.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Para notificaciones
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+//import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 import 'package:savvy/main.dart'; // Aquí asumo que tienes flutterLocalNotificationsPlugin definido
 
 class crear_logro extends StatefulWidget {
@@ -67,7 +68,6 @@ class _CrearLogroState extends State<crear_logro> {
     final snapshot = await uploadTask;
     return await snapshot.ref.getDownloadURL();
   }
-
 
   Future<void> mostrarNotificacion(String titulo, String cuerpo) async {
     const AndroidNotificationDetails androidDetails =
