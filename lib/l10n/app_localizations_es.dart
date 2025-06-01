@@ -159,4 +159,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cancel => 'Cancelar';
+
+  @override
+  String get saveChanges => 'Guardar cambios';
+
+  @override
+  String get changesSaved => 'Cambios realizados satisfactoriamente';
+
+  @override
+  String get errorSavingChanges => 'Error al guardar los cambios';
+
+  @override
+  String get success => 'Cerrando Sesion';
+
+  @override
+  String get ok => 'Aceptar';
+
+  @override
+  String get noFound => 'No se encontraron logros con ese nombre.';
+
+  @override
+  String get january => 'Enero';
+
+  @override
+  String get february => 'Febrero';
+
+  @override
+  String get march => 'Marzo';
+
+  @override
+  String get april => 'Abril';
+
+  @override
+  String get may => 'Mayo';
+
+  @override
+  String get june => 'Junio';
+
+  @override
+  String get july => 'Julio';
+
+  @override
+  String get august => 'Agosto';
+
+  @override
+  String get september => 'Septiembre';
+
+  @override
+  String get october => 'Octubre';
+
+  @override
+  String get november => 'Noviembre';
+
+  @override
+  String get december => 'Diciembre';
 }

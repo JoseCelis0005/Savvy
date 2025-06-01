@@ -49,5 +49,27 @@
   "logoutButton": "Cerrar Sesión",
   "logoutSuccess": "Sesión cerrada con éxito!",
   "logoutError": "Error al cerrar sesión",
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+
+  "saveChanges": "Guardar cambios",
+  "changesSaved": "Cambios realizados satisfactoriamente",
+  "errorSavingChanges": "Error al guardar los cambios",
+
+  "success": "Cerrando Sesion",
+  "ok": "Aceptar",
+
+  "noFound": "No se encontraron logros con ese nombre.",
+  
+  "january": "Enero",
+  "february": "Febrero",
+  "march": "Marzo",
+  "april": "Abril",
+  "may": "Mayo",
+  "june": "Junio",
+  "july": "Julio",
+  "august": "Agosto",
+  "september": "Septiembre",
+  "october": "Octubre",
+  "november": "Noviembre",
+  "december": "Diciembre"
 }

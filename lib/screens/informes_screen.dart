@@ -9,6 +9,11 @@ import 'package:provider/provider.dart'; // Importar Provider
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importar tu CurrencyProvider
 import 'package:intl/intl.dart'; // Importar para NumberFormat
 
+//informes
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
 class InformesScreen extends StatelessWidget {
   const InformesScreen({Key? key}) : super(key: key);
 
@@ -16,7 +21,7 @@ class InformesScreen extends StatelessWidget {
   String _formatCurrency(double value, CurrencyProvider currencyProvider) {
     final convertedValue = currencyProvider.convertAmount(value);
     final currencySymbol = currencyProvider.getCurrencySymbol();
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    //final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     final formatter = NumberFormat.currency(
       locale:
@@ -32,6 +37,7 @@ class InformesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final l10n = AppLocalizations.of(context);
 
     if (l10n == null) {
@@ -43,6 +49,13 @@ class InformesScreen extends StatelessWidget {
     final userName =
         user?.email ??
         l10n.userNamePlaceholder; // Usar el email o un placeholder
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Inicio')),
+        body: Center(child: Text('Usuario no autenticado')),
+      );
+    }
 
     // Accede al CurrencyProvider aquí
     final currencyProvider = Provider.of<CurrencyProvider>(context);
@@ -160,9 +173,47 @@ class InformesScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _UserInfoSection(userName: userName),
+            FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .get(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
+
+                final data = snapshot.data!.data() as Map<String, dynamic>;
+                final avatarUrl = data['avatarUrl'] ?? '';
+
+                return Column(
+                  children: <Widget>[
+                    _UserInfoSection(
+                      userEmail: user.email ?? '',
+                      avatarUrl: avatarUrl,
+                    ),
+                  ],
+                );
+              },
+            ),
             const SizedBox(height: 20),
-            const _SearchBar(),
+            Center(
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _generarInformePDF,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.teal,
+                  ),
+                  child: const Text(
+                    'Generar Informe',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+            //const _SearchBar(),
             const SizedBox(height: 20),
             Expanded(
               child: ListView(
@@ -280,9 +331,16 @@ class InformesScreen extends StatelessWidget {
   }
 }
 
+// Clase _UserInfoSection definida sin const
 class _UserInfoSection extends StatelessWidget {
-  final String userName;
-  const _UserInfoSection({Key? key, required this.userName}) : super(key: key);
+  final String userEmail;
+  final String? avatarUrl; // Puede ser null
+
+  const _UserInfoSection({
+    Key? key,
+    required this.userEmail,
+    this.avatarUrl,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -297,13 +355,15 @@ class _UserInfoSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                backgroundImage: AssetImage('assets/images/informe.png'),
+              CircleAvatar(
+                backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+                    ? NetworkImage(avatarUrl!)
+                    : const AssetImage('assets/images/informe.png') as ImageProvider,
                 radius: 25,
               ),
               const SizedBox(width: 10),
               Text(
-                userName,
+                userEmail,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -311,7 +371,13 @@ class _UserInfoSection extends StatelessWidget {
               ),
             ],
           ),
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              Navigator.pushNamed(context, '/config-usuario');
+            },
+          ),
+          // Botón para ir a la configuración del usuario
         ],
       ),
     );
@@ -462,4 +528,142 @@ class _BottomNavigationBar extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _generarInformePDF() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final pdf = pw.Document();
+  final dateFormatter = DateFormat('dd/MM/yyyy');
+  final timeFormatter = DateFormat('HH:mm');
+  final stringDateFormat = DateFormat('dd/MM/yyyy');
+
+  double totalMontos = 0;
+  double totalAbonado = 0;
+
+  final archievementsSnapshot = await FirebaseFirestore.instance
+      .collection('achievements')
+      .where('userId', isEqualTo: user.uid)
+      .get();
+
+  List<pw.Widget> contenidoPDF = [
+    pw.Text('Informe de Logros', style: pw.TextStyle(fontSize: 24)),
+    pw.SizedBox(height: 20),
+  ];
+
+  for (var logro in archievementsSnapshot.docs) {
+    contenidoPDF.addAll([
+      pw.Divider(),
+      pw.Text('Nombre: ${logro['name_logro']}',
+          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+      pw.Text('Monto objetivo: \$${logro['monto']}'),
+      pw.Text(
+        'Fecha inicio: ${_parseSafeDate(logro['fec_inicio'], stringDateFormat)}',
+      ),
+      pw.Text(
+        'Fecha fin: ${_parseSafeDate(logro['fec_fin'], stringDateFormat)}',
+      ),
+      pw.Text('Creado: ${dateFormatter.format(_parseTimestamp(logro['created_at']))}'),
+      pw.SizedBox(height: 8),
+      pw.Text('Abonos:', style: pw.TextStyle(decoration: pw.TextDecoration.underline)),
+    ]);
+
+    // Obtener y construir sección de abonos (ya no usamos await dentro del build)
+    final abonosWidget = await _buildAbonosSection(
+      logro.id,
+      logro['monto'],
+      user.uid,
+      dateFormatter,
+      timeFormatter,
+      (monto, abonado) {
+        totalMontos += monto;
+        totalAbonado += abonado;
+      },
+    );
+
+    contenidoPDF.add(abonosWidget);
+    contenidoPDF.add(pw.SizedBox(height: 12));
+  }
+
+  // Agregar resumen final
+  contenidoPDF.addAll([
+    pw.Divider(),
+    pw.Text('Resumen Final', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+    pw.Text('Total de Metas: \$${totalMontos.toStringAsFixed(2)}'),
+    pw.Text('Total Ahorrado: \$${totalAbonado.toStringAsFixed(2)}'),
+    pw.Text(
+      'Porcentaje Global: ${(totalAbonado / totalMontos * 100).clamp(0, 100).toStringAsFixed(1)}%',
+    ),
+  ]);
+
+  pdf.addPage(pw.MultiPage(build: (context) => contenidoPDF));
+
+  await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+}
+
+String _parseSafeDate(dynamic value, DateFormat formatter) {
+  try {
+    if (value is String) {
+      return formatter.format(formatter.parse(value));
+    } else if (value is Timestamp) {
+      return formatter.format(value.toDate());
+    }
+  } catch (e) {
+    return 'Fecha inválida';
+  }
+  return 'No disponible';
+}
+
+DateTime _parseTimestamp(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  } else if (value is DateTime) {
+    return value;
+  } else {
+    return DateTime.now(); // fallback
+  }
+}
+
+Future<pw.Widget> _buildAbonosSection(
+  String achievementId,
+  dynamic monto,
+  String userId,
+  DateFormat dateFormatter,
+  DateFormat timeFormatter,
+  void Function(double monto, double abonado) onResumen,
+) async {
+  final abonosSnapshot = await FirebaseFirestore.instance
+      .collection('agregados')
+      .where('userId', isEqualTo: userId)
+      .where('achievementId', isEqualTo: achievementId)
+      .get();
+
+  double totalAbono = 0;
+
+  final rows = <pw.Widget>[];
+
+  for (var abono in abonosSnapshot.docs) {
+    final fecha = abono['created_at'].toDate();
+    final valor = double.tryParse(abono['valor_agregado'].toString()) ?? 0;
+    totalAbono += valor;
+
+    rows.add(
+      pw.Bullet(
+        text:
+            '${dateFormatter.format(fecha)} ${timeFormatter.format(fecha)} - \$${valor.toStringAsFixed(2)}',
+      ),
+    );
+  }
+
+  final montoDouble = double.tryParse(monto.toString()) ?? 0;
+  final restante = montoDouble - totalAbono;
+
+  rows.add(pw.SizedBox(height: 6));
+  rows.add(pw.Text('Total abonado: \$${totalAbono.toStringAsFixed(2)}'));
+  rows.add(pw.Text('Falta por ahorrar: \$${restante.toStringAsFixed(2)}'));
+
+  onResumen(montoDouble, totalAbono);
+
+  return pw.Column(children: rows);
 }

@@ -49,5 +49,26 @@
   "logoutButton": "Log Out",
   "logoutSuccess": "Logged out successfully!",
   "logoutError": "Error logging out",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "saveChanges": "Save Changes",
+  "changesSaved": "Changes made successfully",
+  "errorSavingChanges": "Error saving changes",
+
+  "success": "Log Out",
+  "ok": "OK",
+
+  "noFound": "No achievements match your search",
+  
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "june": "June",
+  "july": "July",
+  "august": "August",
+  "september": "September",
+  "october": "October",
+  "november": "November",
+  "december": "December"
 }

@@ -10,8 +10,33 @@ import 'package:provider/provider.dart'; // Importa Provider
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importa tu CurrencyProvider
 
 //pantalla logros
-class LogrosScreen extends StatelessWidget {
+class LogrosScreen extends StatefulWidget {
+  @override
+  _LogrosScreenState createState() => _LogrosScreenState();
+}
+
+
+class _LogrosScreenState extends State<LogrosScreen>  {
   //const LogrosScreen({super.key});
+
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim().toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // Siempre recuerda liberar el controlador
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +88,7 @@ class LogrosScreen extends StatelessWidget {
                 ],
               ),
               child: TextField(
+                controller: _searchController,
                 decoration: InputDecoration(
                   hintText: l10n.search,
                   prefixIcon: Icon(Icons.search),
@@ -81,11 +107,10 @@ class LogrosScreen extends StatelessWidget {
               child: ListView(
                 children: [
                   StreamBuilder(
-                    stream:
-                        FirebaseFirestore.instance
-                            .collection('achievements')
-                            .where('userId', isEqualTo: uid)
-                            .snapshots(),
+                    stream: FirebaseFirestore.instance
+                        .collection('achievements')
+                        .where('userId', isEqualTo: uid)
+                        .snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: CircularProgressIndicator());
@@ -93,36 +118,37 @@ class LogrosScreen extends StatelessWidget {
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                         return Center(child: Text('No achievements found.'));
                       }
-                      return Column(
-                        children:
-                            snapshot.data!.docs.map((doc) {
-                              final photoUrl =
-                                  doc['photoUrl'] ?? 'assets/images/logro.png';
-                              // Asegúrate de que el monto se pase como double para la conversión
-                              final double montoObjetivoEnBase =
-                                  double.tryParse(
-                                    doc['monto']?.toString() ?? '0',
-                                  ) ??
-                                  0;
 
-                              return Column(
-                                children: [
-                                  LogroItem(
-                                    userId: uid,
-                                    id: doc.id,
-                                    imagenUrl: photoUrl,
-                                    titulo: _capitalizeFirstLetter(
-                                      doc['name_logro'] ?? 'Sin Título',
-                                    ),
-                                    // Pasa el monto base y el currencyProvider al LogroItem
-                                    montoBase: montoObjetivoEnBase,
-                                    currencyProvider:
-                                        currencyProvider, // Pasa el provider
-                                  ),
-                                  SizedBox(height: 12.0),
-                                ],
-                              );
-                            }).toList(),
+                      // 🔍 Filtro por búsqueda
+                      final filteredDocs = snapshot.data!.docs.where((doc) {
+                        final name = (doc['name_logro'] ?? '').toString().toLowerCase();
+                        return name.contains(_searchQuery);
+                      }).toList();
+
+                      if (filteredDocs.isEmpty) {
+                        return Center(child: Text(l10n.noFound));
+                      }
+
+                      return Column(
+                        children: filteredDocs.map((doc) {
+                          final photoUrl = doc['photoUrl'] ?? 'assets/images/logro.png';
+                          final double montoObjetivoEnBase =
+                              double.tryParse(doc['monto']?.toString() ?? '0') ?? 0;
+
+                          return Column(
+                            children: [
+                              LogroItem(
+                                userId: uid,
+                                id: doc.id,
+                                imagenUrl: photoUrl,
+                                titulo: _capitalizeFirstLetter(doc['name_logro'] ?? 'Sin Título'),
+                                montoBase: montoObjetivoEnBase,
+                                currencyProvider: currencyProvider,
+                              ),
+                              SizedBox(height: 12.0),
+                            ],
+                          );
+                        }).toList(),
                       );
                     },
                   ),

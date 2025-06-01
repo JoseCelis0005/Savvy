@@ -8,6 +8,7 @@ import 'package:savvy/main.dart'; // Asegúrate de que esta importación sea cor
 import 'package:savvy/l10n/app_localizations.dart'; // este es correcto
 import 'package:provider/provider.dart';
 import 'package:savvy/screens/configuracion/currency_provider.dart'; // Importa tu CurrencyProvider
+import 'package:fl_chart/fl_chart.dart';
 
 class HelloWorldScreen extends StatefulWidget {
   @override
@@ -104,72 +105,109 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
         //   },
         // ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            _UserInfoSection(userEmail: userEmail),
-            const SizedBox(height: 16),
+            //_UserInfoSection(userEmail: userEmail),
+
+            FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .get(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
+
+                final data = snapshot.data!.data() as Map<String, dynamic>;
+                final avatarUrl = data['avatarUrl'] ?? '';
+
+                return Column(
+                  children: <Widget>[
+                    _UserInfoSection(
+                      userEmail: user.email ?? '',
+                      avatarUrl: avatarUrl,
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 60),
             SizedBox(
               width: 300,
               child: StreamBuilder<QuerySnapshot>(
-                stream:
-                    FirebaseFirestore.instance
-                        .collection('agregados')
-                        .where('userId', isEqualTo: user.uid)
-                        .snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('agregados')
+                    .where('userId', isEqualTo: user.uid)
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return const CircularProgressIndicator();
                   }
 
                   final docs = snapshot.data!.docs;
-                  final now = DateTime.now();
-                  final currentMonth = now.month;
-                  final currentYear = now.year;
 
-                  double totalMensual =
-                      0; // Este es el valor en tu moneda base (COP)
+                  // Map para agrupar por mes
+                  final Map<String, double> montosPorMes = {};
+
+                  double totalMensual = 0;
 
                   for (var doc in docs) {
-                    final fechaStr = doc['fecha'];
-                    final valorStr = doc['valor_agregado'];
-
                     try {
+                      final valorStr = doc['valor_agregado'].toString();
+                      final fechaStr = doc['fecha'].toString();
+
                       final fecha = DateTime.parse(
                         fechaStr.split('/').reversed.join('-'),
                       );
 
-                      if (fecha.month == currentMonth &&
-                          fecha.year == currentYear) {
-                        totalMensual +=
-                            double.tryParse(valorStr.toString()) ?? 0;
-                      }
+                      final monto = double.tryParse(valorStr) ?? 0;
+
+                      final claveMes = '${fecha.year}-${fecha.month.toString().padLeft(2, '0')}';
+
+                      montosPorMes[claveMes] = (montosPorMes[claveMes] ?? 0) + monto;
+                      totalMensual += monto;
                     } catch (e) {
+                      // Ignorar errores en parseo
                       continue;
                     }
                   }
 
+                  // Convertimos a lista de mapas para enviarla al widget Recuadro
+                  final datosMensuales = montosPorMes.entries.map((entry) {
+                    final partes = entry.key.split('-'); // ['2025', '03']
+                    final nombreMes = _getNombreMes(int.parse(partes[1]));
+                    return {
+                      'mes': nombreMes,
+                      'monto': entry.value,
+                    };
+                  }).toList();
+
+                  // Ordenar por mes (opcional)
+                  datosMensuales.sort((a, b) =>
+                      _ordenMes(a['mes'] as String).compareTo(_ordenMes(b['mes'] as String)));
+
                   return Recuadro(
-                    titulo: 'Ahorros Mensuales',
-                    // MODIFICADO: Pasa totalMensual (en COP) y el currencyProvider
+                    titulo: 'Ahorros Totales',
                     monto: _formatCurrency(totalMensual, currencyProvider),
                     porcentaje: '',
+                    datosMensuales: datosMensuales,
                   );
                 },
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 30),
             SizedBox(
               width: 300,
               child: StreamBuilder<QuerySnapshot>(
-                stream:
-                    FirebaseFirestore.instance
-                        .collection('achievements')
-                        .where('userId', isEqualTo: user.uid)
-                        .snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('achievements')
+                    .where('userId', isEqualTo: user.uid)
+                    .snapshots(),
                 builder: (context, snapshotObjetivos) {
                   if (!snapshotObjetivos.hasData) {
                     return const CircularProgressIndicator();
@@ -182,41 +220,65 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
                     return sum + (double.tryParse(monto.toString()) ?? 0);
                   });
 
+                  // **Aquí agrupamos los montos por mes según achievements y created_at**
+                  final Map<String, double> montosPorMesAchievements = {};
+                  for (var doc in docsObjetivos) {
+                    try {
+                      final monto = double.tryParse(doc['monto'].toString()) ?? 0;
+                      final Timestamp ts = doc['created_at'];
+                      final DateTime fecha = ts.toDate();
+
+                      final claveMes =
+                          '${fecha.year}-${fecha.month.toString().padLeft(2, '0')}';
+
+                      montosPorMesAchievements[claveMes] =
+                          (montosPorMesAchievements[claveMes] ?? 0) + monto;
+                    } catch (e) {
+                      continue;
+                    }
+                  }
+
+                  final datosMensuales = montosPorMesAchievements.entries.map((entry) {
+                    final partes = entry.key.split('-');
+                    final nombreMes = _getNombreMes(int.parse(partes[1]));
+                    return {
+                      'mes': nombreMes,
+                      'monto': entry.value,
+                    };
+                  }).toList();
+
+                  datosMensuales.sort((a, b) =>
+                      _ordenMes(a['mes'] as String).compareTo(_ordenMes(b['mes'] as String)));
+
+                  // Ahora viene el StreamBuilder para agregados para calcular totalAgregado y porcentaje
+
                   return StreamBuilder<QuerySnapshot>(
-                    stream:
-                        FirebaseFirestore.instance
-                            .collection('agregados')
-                            .where('userId', isEqualTo: user.uid)
-                            .snapshots(),
+                    stream: FirebaseFirestore.instance
+                        .collection('agregados')
+                        .where('userId', isEqualTo: user.uid)
+                        .snapshots(),
                     builder: (context, snapshotAgregados) {
                       if (!snapshotAgregados.hasData) {
                         return const CircularProgressIndicator();
                       }
 
                       final docsAgregados = snapshotAgregados.data!.docs;
-                      final now = DateTime.now();
-                      final currentMonth = now.month;
-                      final currentYear = now.year;
 
-                      double totalAgregado =
-                          0; // Este es el valor en tu moneda base (COP)
+                      double totalAgregado = 0;
 
                       for (var doc in docsAgregados) {
-                        Timestamp ts = doc['created_at'];
-                        DateTime fecha = ts.toDate();
-
-                        if (fecha.month == currentMonth &&
-                            fecha.year == currentYear) {
+                        try {
                           final valor = doc['valor_agregado'];
-                          totalAgregado +=
-                              double.tryParse(valor.toString()) ?? 0;
+                          final valorDouble = double.tryParse(valor.toString()) ?? 0;
+                          totalAgregado += valorDouble;
+                        } catch (e) {
+                          continue;
                         }
                       }
 
-                      double porcentaje =
-                          totalObjetivo > 0
-                              ? (totalAgregado / totalObjetivo).clamp(0, 1)
-                              : 0;
+                      double porcentaje = totalObjetivo > 0
+                          ? (totalAgregado / totalObjetivo).clamp(0, 1)
+                          : 0;
 
                       Color color;
                       if (porcentaje <= 0.3) {
@@ -231,15 +293,10 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Recuadro(
-                            titulo:
-                                'Meta de Ahorro', // Cambiado el título para reflejar el objetivo
-                            // MODIFICADO: Pasa totalObjetivo (en COP) y el currencyProvider
-                            monto: _formatCurrency(
-                              totalObjetivo,
-                              currencyProvider,
-                            ),
-                            porcentaje:
-                                '${(porcentaje * 100).toStringAsFixed(1)}%',
+                            titulo: 'Meta de Ahorro',
+                            monto: _formatCurrency(totalObjetivo, currencyProvider),
+                            porcentaje: '${(porcentaje * 100).toStringAsFixed(1)}%',
+                            datosMensuales: datosMensuales, // datos de achievements agrupados por mes
                           ),
                           const SizedBox(height: 8),
                           LinearProgressIndicator(
@@ -257,7 +314,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
               ),
             ),
             SizedBox(height: 20),
-            SizedBox(
+            /*SizedBox(
               width: 300,
               child: Recuadro(
                 titulo: 'Gastos',
@@ -265,7 +322,7 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
                 monto: _formatCurrency(1234.56, currencyProvider),
                 porcentaje: '+12.34%',
               ),
-            ),
+            ),*/
           ],
         ),
       ),
@@ -334,12 +391,221 @@ class _HelloWorldScreenState extends State<HelloWorldScreen> {
     );
   }
 }
+class Recuadro extends StatefulWidget {
+  final String titulo;
+  final String monto;
+  final String porcentaje;
+
+  // Lista de montos mensuales: [{'mes': 'Enero', 'monto': 200}, ...]
+  final List<Map<String, dynamic>> datosMensuales;
+
+  const Recuadro({
+    Key? key,
+    required this.titulo,
+    required this.monto,
+    required this.porcentaje,
+    required this.datosMensuales,
+  }) : super(key: key);
+
+  @override
+  State<Recuadro> createState() => _RecuadroState();
+}
+
+class _RecuadroState extends State<Recuadro> {
+  bool _expandido = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 600,
+          decoration: BoxDecoration(
+            color: Colors.teal.shade200,
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            children: [
+              // Contenido principal
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.titulo,
+                    style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w800),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    widget.monto,
+                    style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (widget.porcentaje.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Text(
+                            widget.porcentaje,
+                            style: const TextStyle(fontSize: 12.0, color: Colors.white),
+                          ),
+                        )
+                      else
+                        const SizedBox(),
+
+                      const SizedBox(width: 8.0),
+
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _expandido = !_expandido;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade600,
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6.0),
+                          ),
+                        ),
+                        icon: Icon(
+                          _expandido ? Icons.expand_less : Icons.expand_more,
+                          size: 14,
+                        ),
+                        label: Text(
+                          widget.datosMensuales.isNotEmpty
+                              ? _getUltimaFecha(widget.datosMensuales)
+                              : 'Ver gráfica',
+                          style: const TextStyle(fontSize: 12.0, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Gráfica expandida
+        if (_expandido)
+          Container(
+            width: 600,
+            height: 200,
+            margin: EdgeInsets.only(top: 12),
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.teal.shade200),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: _getMaxY(widget.datosMensuales),
+                barTouchData: BarTouchData(enabled: true),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final meses = _getMesesCortos(widget.datosMensuales);
+                        if (value.toInt() < meses.length) {
+                          return Text(meses[value.toInt()]);
+                        }
+                        return const Text('');
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                barGroups: widget.datosMensuales.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final monto = (entry.value['monto'] as num).toDouble();
+                  return BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: monto,
+                        color: Colors.teal,
+                        width: 18,
+                        borderRadius: BorderRadius.circular(4),
+                      )
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  double _getMaxY(List<Map<String, dynamic>> datos) {
+    final maxMonto = datos.map((e) => (e['monto'] as num).toDouble()).fold(0.0, (a, b) => a > b ? a : b);
+    return maxMonto + (maxMonto * 0.2); // margen arriba
+  }
+
+  List<String> _getMesesCortos(List<Map<String, dynamic>> datos) {
+    return datos.map((e) => e['mes'].toString().substring(0, 3)).toList();
+  }
+
+  String _getUltimaFecha(List<Map<String, dynamic>> datos) {
+    if (datos.isEmpty) return '';
+    final ultimoMes = datos.last['mes'].toString();
+    return ultimoMes;
+  }
+}
+
+String _getNombreMes(int mes) {
+  const meses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  return meses[mes - 1];
+}
+
+// Devuelve el orden correcto de un mes para poder ordenar
+int _ordenMes(String nombreMes) {
+  const meses = {
+    'Enero': 1,
+    'Febrero': 2,
+    'Marzo': 3,
+    'Abril': 4,
+    'Mayo': 5,
+    'Junio': 6,
+    'Julio': 7,
+    'Agosto': 8,
+    'Septiembre': 9,
+    'Octubre': 10,
+    'Noviembre': 11,
+    'Diciembre': 12
+  };
+  return meses[nombreMes] ?? 0;
+}
+
 
 // Clase _UserInfoSection definida sin const
 class _UserInfoSection extends StatelessWidget {
   final String userEmail;
+  final String? avatarUrl; // Puede ser null
 
-  _UserInfoSection({Key? key, required this.userEmail}) : super(key: key);
+  const _UserInfoSection({
+    Key? key,
+    required this.userEmail,
+    this.avatarUrl,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -355,7 +621,9 @@ class _UserInfoSection extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundImage: AssetImage('assets/images/informe.png'),
+                backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+                    ? NetworkImage(avatarUrl!)
+                    : const AssetImage('assets/images/informe.png') as ImageProvider,
                 radius: 25,
               ),
               const SizedBox(width: 10),
@@ -368,60 +636,13 @@ class _UserInfoSection extends StatelessWidget {
               ),
             ],
           ),
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
-      ),
-    );
-  }
-}
-
-class Recuadro extends StatelessWidget {
-  final String titulo;
-  final String monto;
-  final String porcentaje;
-
-  const Recuadro({
-    Key? key,
-    required this.titulo,
-    required this.monto,
-    required this.porcentaje,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 600,
-      decoration: BoxDecoration(
-        color: Colors.teal.shade200,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            titulo,
-            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w800),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              Navigator.pushNamed(context, '/config-usuario');
+            },
           ),
-          SizedBox(height: 8.0),
-          Text(
-            monto,
-            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8.0),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            decoration: BoxDecoration(
-              color:
-                  Colors
-                      .green, // Puedes hacer que el color del porcentaje sea dinámico si es necesario.
-              borderRadius: BorderRadius.circular(4.0),
-            ),
-            child: Text(
-              porcentaje,
-              style: TextStyle(fontSize: 12.0, color: Colors.white),
-            ),
-          ),
+          // Botón para ir a la configuración del usuario
         ],
       ),
     );
